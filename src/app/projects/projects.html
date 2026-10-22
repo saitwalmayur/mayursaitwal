@@ -1,0 +1,126 @@
+<div class="page-content">
+  <div class="content-inner">
+    <div class="header">
+      <h1>Projects</h1>
+      <p>Explore some of the interactive and software projects I've developed.</p>
+    </div>
+
+    <!-- Category Cards (Showcase integrated) -->
+    <div class="category-grid" style="margin-bottom: 3.5rem;">
+      <div class="category-card" [class.active]="activeCategory === 'unity'" (click)="selectCategory('unity')">
+        <h2>Made with Unity</h2>
+        <p>Games and interactive experiences built with Unity.</p>
+      </div>
+
+      <div class="category-card" [class.active]="activeCategory === 'threejs'" (click)="selectCategory('threejs')">
+        <h2>Made with Three.js</h2>
+        <p>Web apps and dashboards built with Angular & Three.js.</p>
+      </div>
+
+      <div class="category-card" [class.active]="activeCategory === 'react-native'" (click)="selectCategory('react-native')">
+        <h2>Made in React Native</h2>
+        <p>Mobile apps built with React Native.</p>
+      </div>
+    </div>
+
+    <!-- Projects List -->
+    <div *ngIf="activeCategory !== 'react-native'">
+      <div class="section-title" style="margin-top: 1rem; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">
+        <h2 style="color: #00f2fe; margin: 0; font-size: 1.8rem;">Professional Work (Company)</h2>
+      </div>
+
+      <div class="games-grid">
+        <div class="game-card" *ngFor="let project of filteredProfessionalProjects">
+          <div class="game-image-container" *ngIf="project.imageUrl">
+            <img [src]="project.imageUrl" [alt]="project.name" class="game-img" />
+          </div>
+          <div class="game-info">
+            <h3>{{ project.name }}</h3>
+            <div class="game-links">
+              <a *ngFor="let link of project.links" [href]="link.url" target="_blank" class="game-link-btn">
+                {{ link.label }}
+              </a>
+              <button class="game-link-btn info-btn" (click)="openInfo(project)">Info</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="filteredProfessionalProjects.length === 0" style="margin-top: 2rem;">
+        <p>No professional works added yet.</p>
+      </div>
+
+      <div class="section-title" style="margin-top: 4rem; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">
+        <h2 style="color: #00f2fe; margin: 0; font-size: 1.8rem;">Personal & Indie Projects</h2>
+      </div>
+
+      <div class="games-grid">
+        <div class="game-card" *ngFor="let project of filteredIndieProjects">
+          <div class="game-image-container" *ngIf="project.imageUrl">
+            <img [src]="project.imageUrl" [alt]="project.name" class="game-img" />
+          </div>
+          <div class="game-info">
+            <h3>{{ project.name }}</h3>
+            <div class="game-links">
+              <ng-container *ngIf="project.links.length === 1">
+                <a [href]="project.links[0].url" target="_blank" class="game-link-btn">
+                  Play Now
+                </a>
+              </ng-container>
+              <ng-container *ngIf="project.links.length > 1">
+                <button class="game-link-btn" (click)="openPlayLinks(project)">
+                  Play Now
+                </button>
+              </ng-container>
+              <button class="game-link-btn info-btn" (click)="openInfo(project)">Info</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="filteredIndieProjects.length === 0" style="margin-top: 2rem;">
+        <p>No indie works added yet.</p>
+      </div>
+    </div>
+
+
+
+    <!-- React Native Projects List (Empty State Placeholder) -->
+    <div *ngIf="activeCategory === 'react-native'" class="empty-state" style="margin-top: 2rem; text-align: center;">
+      <h3 style="color: #00f2fe; margin-bottom: 1rem;">React Native Projects</h3>
+      <p>No standalone React Native projects are listed here yet.</p>
+      <p style="margin-top: 0.5rem; font-size: 0.95rem; color: rgba(255,255,255,0.6);">
+        Please check the <a routerLink="/experience" style="color: #00f2fe; text-decoration: none; font-weight: 500;">Experience</a> section to see my professional work with React Native.
+      </p>
+    </div>
+
+    <!-- Play Links Modal -->
+    <div class="popup-overlay" *ngIf="selectedPlayProject" (click)="closePlayLinks()">
+      <div class="popup-content" (click)="$event.stopPropagation()">
+        <button class="close-btn" (click)="closePlayLinks()">×</button>
+        <h3>Play {{ selectedPlayProject.name }}</h3>
+        
+        <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem;">
+          <a *ngFor="let link of selectedPlayProject.links" [href]="link.url" target="_blank" class="game-link-btn" style="text-align: center; font-size: 1.1rem; padding: 0.8rem;">
+            {{ link.label }}
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Popup Modal -->
+    <div class="popup-overlay" *ngIf="selectedProject" (click)="closeInfo()">
+      <div class="popup-content" (click)="$event.stopPropagation()">
+        <button class="close-btn" (click)="closeInfo()">×</button>
+        <h3>{{ selectedProject.name }}</h3>
+        
+        <div class="tech-stack" *ngIf="selectedProject.techStack">
+          <span class="label">Tech Stack:</span>
+          <span class="value">{{ selectedProject.techStack }}</span>
+        </div>
+        
+        <p class="details" *ngIf="selectedProject.details">{{ selectedProject.details }}</p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,146 @@
+<div class="fullscreen-scene-container" #viewportContainer>
+  <!-- Fullscreen WebGL Canvas -->
+  <canvas #rendererCanvas class="webgl-canvas"></canvas>
+
+  <!-- Top Floating Navigation Bar -->
+  <div class="top-floating-bar">
+    <a routerLink="/threejs" class="back-pill-btn">
+      <span class="arrow">←</span>
+      <span>Projects</span>
+    </a>
+    <div class="title-pill">✨ Custom GLSL Shaders</div>
+    <button class="reset-pill-btn" (click)="resetCamera()" title="Reset Camera View">
+      ↺ Reset View
+    </button>
+  </div>
+
+  <!-- Bottom Floating Control Dock -->
+  <div class="bottom-floating-dock" [class.collapsed]="isDockCollapsed">
+    <div class="dock-header">
+      <span class="dock-title">Shader Controls</span>
+      <button class="dock-toggle-btn" (click)="toggleDock()" [title]="isDockCollapsed ? 'Expand Dock' : 'Collapse Dock'">
+        {{ isDockCollapsed ? '▲ Controls' : '▼ Hide' }}
+      </button>
+    </div>
+
+    <div class="dock-body" *ngIf="!isDockCollapsed">
+      <!-- Geometry Selector -->
+      <div class="dock-group">
+        <span class="dock-label">Geometry:</span>
+        <div class="dock-btn-row">
+          <button
+            class="dock-btn"
+            [class.active]="geometryType === 'sphere'"
+            (click)="setGeometry('sphere')"
+          >
+            Sphere
+          </button>
+          <button
+            class="dock-btn"
+            [class.active]="geometryType === 'torusKnot'"
+            (click)="setGeometry('torusKnot')"
+          >
+            Torus Knot
+          </button>
+          <button
+            class="dock-btn"
+            [class.active]="geometryType === 'plane'"
+            (click)="setGeometry('plane')"
+          >
+            Plane
+          </button>
+        </div>
+      </div>
+
+      <!-- Palette Presets -->
+      <div class="dock-group">
+        <span class="dock-label">Palette:</span>
+        <div class="dock-btn-row">
+          <button
+            class="dock-btn"
+            [class.active]="preset === 'cyanPlasma'"
+            (click)="setPreset('cyanPlasma')"
+          >
+            Cyan Plasma
+          </button>
+          <button
+            class="dock-btn"
+            [class.active]="preset === 'cyberNeon'"
+            (click)="setPreset('cyberNeon')"
+          >
+            Cyber Neon
+          </button>
+          <button
+            class="dock-btn"
+            [class.active]="preset === 'emeraldWave'"
+            (click)="setPreset('emeraldWave')"
+          >
+            Emerald
+          </button>
+          <button
+            class="dock-btn"
+            [class.active]="preset === 'solarFlare'"
+            (click)="setPreset('solarFlare')"
+          >
+            Solar Flare
+          </button>
+        </div>
+      </div>
+
+      <!-- Sliders Row -->
+      <div class="dock-sliders-row">
+        <div class="slider-box">
+          <label>Speed: {{ speed | number: '1.1-2' }}</label>
+          <input
+            type="range"
+            min="0.1"
+            max="3.0"
+            step="0.1"
+            [value]="speed"
+            (input)="onSpeedInput($event)"
+          />
+        </div>
+        <div class="slider-box">
+          <label>Frequency: {{ frequency | number: '1.1-2' }}</label>
+          <input
+            type="range"
+            min="0.5"
+            max="6.0"
+            step="0.1"
+            [value]="frequency"
+            (input)="onFrequencyInput($event)"
+          />
+        </div>
+        <div class="slider-box">
+          <label>Amplitude: {{ amplitude | number: '1.2-2' }}</label>
+          <input
+            type="range"
+            min="0.05"
+            max="0.8"
+            step="0.05"
+            [value]="amplitude"
+            (input)="onAmplitudeInput($event)"
+          />
+        </div>
+      </div>
+
+      <!-- Toggles Row -->
+      <div class="dock-toggles-row">
+        <button
+          class="dock-btn toggle-btn"
+          [class.active]="wireframe"
+          (click)="toggleWireframe()"
+        >
+          {{ wireframe ? 'Solid' : 'Wireframe' }}
+        </button>
+        <button
+          class="dock-btn toggle-btn"
+          [class.active]="autoRotate"
+          (click)="toggleAutoRotate()"
+        >
+          {{ autoRotate ? 'Auto-Rotate: On' : 'Auto-Rotate: Off' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

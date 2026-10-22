@@ -1,0 +1,149 @@
+<div class="fullscreen-scene-container" #viewportContainer>
+  <!-- Fullscreen WebGL Canvas -->
+  <canvas #rendererCanvas class="webgl-canvas"></canvas>
+
+  <!-- Top Floating Navigation Bar -->
+  <div class="top-floating-bar">
+    <a routerLink="/threejs" class="back-pill-btn">
+      <span class="arrow">←</span>
+      <span>Projects</span>
+    </a>
+    <div class="title-pill">{{ currentEffect.icon }} {{ currentEffect.name }}</div>
+  </div>
+
+  <!-- LEFT SIDE: Particle Effects List Panel -->
+  <div class="side-panel left-panel" [class.collapsed]="isLeftCollapsed">
+    <div class="panel-header">
+      <div class="panel-title-wrap" *ngIf="!isLeftCollapsed">
+        <span class="panel-icon">✨</span>
+        <span class="panel-title">Effects</span>
+      </div>
+      <button
+        class="collapse-btn"
+        (click)="toggleLeft()"
+        [title]="isLeftCollapsed ? 'Expand Effects' : 'Collapse Effects'"
+      >
+        {{ isLeftCollapsed ? '▶' : '◀' }}
+      </button>
+    </div>
+
+    <div class="panel-body" *ngIf="!isLeftCollapsed">
+      <div class="effects-vertical-list">
+        <button
+          *ngFor="let opt of effectOptions"
+          class="effect-item-btn"
+          [class.active]="activeEffectId === opt.id"
+          (click)="selectEffect(opt.id)"
+          [title]="opt.description"
+        >
+          <span class="effect-icon">{{ opt.icon }}</span>
+          <div class="effect-info">
+            <span class="effect-name">{{ opt.name }}</span>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDE: Properties & Controls Panel -->
+  <div class="side-panel right-panel" [class.collapsed]="isRightCollapsed">
+    <div class="panel-header">
+      <button
+        class="collapse-btn"
+        (click)="toggleRight()"
+        [title]="isRightCollapsed ? 'Expand Properties' : 'Collapse Properties'"
+      >
+        {{ isRightCollapsed ? '◀' : '▶' }}
+      </button>
+      <div class="panel-title-wrap" *ngIf="!isRightCollapsed">
+        <span class="panel-icon">⚙️</span>
+        <span class="panel-title">Properties</span>
+      </div>
+    </div>
+
+    <div class="panel-body" *ngIf="!isRightCollapsed">
+      <!-- 1. Color Palettes -->
+      <div class="prop-section">
+        <span class="prop-label">Palette</span>
+        <div class="palettes-grid">
+          <button
+            *ngFor="let theme of colorThemes"
+            class="palette-btn"
+            [class.active]="particleTheme === theme.id"
+            (click)="setTheme(theme.id)"
+            [title]="theme.name"
+          >
+            <span class="color-dot" [style.background]="theme.dotColor"></span>
+            <span class="theme-name">{{ theme.name }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. Speed Slider -->
+      <div class="prop-section">
+        <div class="prop-label-row">
+          <span class="prop-label">Speed</span>
+          <span class="prop-val">{{ simulationSpeed | number: '1.1-1' }}x</span>
+        </div>
+        <input
+          type="range"
+          class="prop-range"
+          min="0.2"
+          max="2.5"
+          step="0.1"
+          [value]="simulationSpeed"
+          (input)="onSpeedChange($event)"
+        />
+      </div>
+
+      <!-- 3. Particle Count -->
+      <div class="prop-section">
+        <span class="prop-label">Particles</span>
+        <div class="pills-row">
+          <button
+            class="pill-btn"
+            [class.active]="particleCount === 3000"
+            (click)="setParticleCount(3000)"
+          >
+            3k
+          </button>
+          <button
+            class="pill-btn"
+            [class.active]="particleCount === 6000"
+            (click)="setParticleCount(6000)"
+          >
+            6k
+          </button>
+          <button
+            class="pill-btn"
+            [class.active]="particleCount === 10000"
+            (click)="setParticleCount(10000)"
+          >
+            10k
+          </button>
+        </div>
+      </div>
+
+      <!-- 4. Camera & Rotation Controls -->
+      <div class="prop-section actions-section">
+        <button
+          class="action-btn toggle-btn"
+          [class.active]="autoRotate"
+          (click)="toggleAutoRotate()"
+        >
+          {{ autoRotate ? '🔄 Auto-Rotate: On' : '⏸ Auto-Rotate: Off' }}
+        </button>
+
+        <button class="action-btn reset-btn" (click)="resetCamera()">
+          ↺ Reset View
+        </button>
+      </div>
+
+      <!-- 5. Active Info Note -->
+      <div class="prop-info-box">
+        <span class="info-icon">{{ currentEffect.icon }}</span>
+        <span class="info-text">{{ currentEffect.description }}</span>
+      </div>
+    </div>
+  </div>
+</div>

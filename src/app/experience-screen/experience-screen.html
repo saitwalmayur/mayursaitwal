@@ -1,0 +1,93 @@
+<div class="page-content">
+  <div class="content-inner">
+    <div class="header">
+      <h1>Experience & Projects</h1>
+      <p>Explore my professional work history and the interactive experiences I've developed.</p>
+    </div>
+
+    <div class="layout-container">
+      <div class="main-column">
+        <div class="timeline-container" *ngIf="experiences.length > 0">
+      <div class="experience-node" *ngFor="let exp of experiences; let last = last">
+        
+        <!-- Timeline Graphics Column -->
+        <div class="timeline-visuals">
+          <div class="timeline-dot"></div>
+          <!-- Draw line connecting to next node unless it's the last one -->
+          <div class="timeline-line" *ngIf="!last"></div>
+        </div>
+        
+        <!-- Content Panel -->
+        <div class="experience-card glass-panel">
+          <div class="exp-header">
+            <div class="title-group">
+              <h2>{{ exp.company }}</h2>
+              <span class="role">{{ exp.role }}</span>
+            </div>
+            <div class="meta-group">
+              <span class="duration">📅 {{ exp.duration }}</span>
+              <span class="location">📍 {{ exp.location }}</span>
+            </div>
+          </div>
+          
+          <ul class="bullets-list" *ngIf="exp.bullets && exp.bullets.length > 0">
+            <li *ngFor="let bullet of exp.bullets">
+              <span class="bullet-icon">➤</span>
+              <span class="bullet-text">{{ bullet }}</span>
+            </li>
+          </ul>
+
+          <div class="games-grid" *ngIf="exp.games && exp.games.length > 0">
+            <div class="game-card" *ngFor="let game of exp.games">
+              <div class="game-image-container" *ngIf="game.imageUrl">
+                <img [src]="game.imageUrl" [alt]="game.name" class="game-img" />
+              </div>
+              <div class="game-info">
+                <h3>{{ game.name }}</h3>
+                <div class="game-links">
+                  <a *ngFor="let link of game.links" [href]="link.url" target="_blank" class="game-link-btn" [ngClass]="link.type">
+                    {{ link.label }}
+                  </a>
+                  <button class="game-link-btn info-btn" (click)="openInfo(game)">Info</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+        <div class="empty-state" *ngIf="experiences.length === 0">
+          <p>No experiences added to this section yet.</p>
+        </div>
+      </div>
+
+      <div class="side-column">
+        <div class="skills-sidebar">
+          <h3>Skills & Expertise</h3>
+          <div class="skill-category" *ngFor="let category of skillCategories">
+            <h4 class="category-title">{{ category.title }}</h4>
+            <div class="skills-container">
+              <span class="skill-badge" *ngFor="let skill of category.skills">{{ skill }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Popup Modal -->
+    <div class="popup-overlay" *ngIf="selectedGame" (click)="closeInfo()">
+      <div class="popup-content" (click)="$event.stopPropagation()">
+        <button class="close-btn" (click)="closeInfo()">×</button>
+        <h3>{{ selectedGame.name }}</h3>
+        
+        <div class="tech-stack" *ngIf="selectedGame.techStack">
+          <span class="label">Tech Stack:</span>
+          <span class="value">{{ selectedGame.techStack }}</span>
+        </div>
+        
+        <p class="details" *ngIf="selectedGame.details">{{ selectedGame.details }}</p>
+      </div>
+    </div>
+  </div>
+</div>

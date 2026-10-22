@@ -1,0 +1,85 @@
+﻿<div class="page-wrap">
+  <canvas #babylonCanvas class="render-canvas"></canvas>
+
+  <!-- Loading -->
+  <div class="loading-overlay" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Building 118 Elements…</p>
+  </div>
+
+  <!-- Table mode header -->
+  <header class="table-header" *ngIf="mode === 'table' && !loading">
+    <div class="badge">⚗️ Babylon.js · Periodic Table</div>
+    <h1>Interactive 3D Periodic Table</h1>
+    <p>All 118 elements · Hover to inspect · Click to view atom structure</p>
+  </header>
+
+  <!-- Hover tooltip -->
+  <div class="hover-card" *ngIf="hovered && mode === 'table'">
+    <div class="hc-symbol" [style.color]="catHex[hovered.category]">{{ hovered.symbol }}</div>
+    <div class="hc-body">
+      <div class="hc-name">{{ hovered.name }}</div>
+      <div class="hc-num">#{{ hovered.number }}</div>
+      <div class="hc-cat" [style.color]="catHex[hovered.category]">{{ catLabel(hovered.category) }}</div>
+      <div class="hc-mass">{{ hovered.mass }} u</div>
+    </div>
+  </div>
+
+  <!-- Atom panel -->
+  <aside class="atom-panel" *ngIf="mode === 'atom' && selected">
+    <button id="back-to-table-btn" class="back-btn" (click)="backToTable()">
+      ← Back to Table
+    </button>
+
+    <div class="atom-hero">
+      <div class="atom-symbol" [style.color]="catHex[selected.category]">{{ selected.symbol }}</div>
+      <div class="atom-num">#{{ selected.number }}</div>
+    </div>
+    <h2 class="atom-name">{{ selected.name }}</h2>
+    <div class="atom-cat-badge" [style.background]="catHex[selected.category] + '33'" [style.borderColor]="catHex[selected.category] + '88'" [style.color]="catHex[selected.category]">
+      {{ catLabel(selected.category) }}
+    </div>
+
+    <div class="props">
+      <div class="prop"><span class="pl">Atomic Mass</span><span class="pv">{{ selected.mass }} u</span></div>
+      <div class="prop"><span class="pl">Period</span><span class="pv">{{ selected.period }}</span></div>
+      <div class="prop"><span class="pl">Group</span><span class="pv">{{ selected.group || '—' }}</span></div>
+    </div>
+
+    <div class="shell-section">
+      <div class="shell-title">Electron Configuration (Bohr)</div>
+      <div class="shell-row" *ngFor="let n of shellsOf(selected); let i = index">
+        <span class="sn">Shell {{ i + 1 }}</span>
+        <div class="sdots">
+          <span class="sdot" [style.background]="catHex[selected.category]"
+                *ngFor="let _ of shellDots(n)"></span>
+        </div>
+        <span class="sc">{{ n }}</span>
+      </div>
+    </div>
+
+    <!-- Element navigator -->
+    <div class="nav-row">
+      <button class="nav-btn" [disabled]="selected.number <= 1"
+              (click)="selectEl(ELEMENTS[selected.number - 2])">◀ Prev</button>
+      <span class="nav-label">{{ selected.number }} / 118</span>
+      <button class="nav-btn" [disabled]="selected.number >= 118"
+              (click)="selectEl(ELEMENTS[selected.number])">Next ▶</button>
+    </div>
+  </aside>
+
+  <!-- Category legend -->
+  <div class="legend" *ngIf="mode === 'table' && !loading">
+    <div class="legend-title">Categories</div>
+    <div class="leg-item" *ngFor="let e of legend">
+      <span class="leg-dot" [style.background]="e[1]"></span>
+      <span class="leg-lbl">{{ catLabel(e[0]) }}</span>
+    </div>
+  </div>
+
+  <!-- Hint bar -->
+  <div class="hint-bar" *ngIf="!loading">
+    <span *ngIf="mode === 'table'">🖱 Scroll to zoom · Drag to orbit · Click element to explore its atom</span>
+    <span *ngIf="mode === 'atom'">🖱 Drag to orbit · Scroll to zoom · Electrons orbit in real time</span>
+  </div>
+</div>

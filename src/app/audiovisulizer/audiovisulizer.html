@@ -1,0 +1,52 @@
+<div class="fullscreen-scene-container" #viewportContainer>
+  <!-- Fullscreen WebGL Canvas -->
+  <canvas #rendererCanvas class="webgl-canvas"></canvas>
+
+  <!-- Top Floating Navigation Bar -->
+  <div class="top-floating-bar">
+    <a routerLink="/threejs" class="back-pill-btn">
+      <span class="arrow">←</span>
+      <span>Projects</span>
+    </a>
+    <div class="title-pill">🎵 Audio-Reactive Visualizer</div>
+    <button class="reset-pill-btn" (click)="resetCamera()" title="Reset Camera View">
+      ↺ Reset View
+    </button>
+  </div>
+
+  <!-- Audio Status Indicator Badge -->
+  <div class="floating-audio-hud">
+    <span class="status-dot" [class.live]="isPlaying"></span>
+    <span>{{ isPlaying ? 'Synthesizer Active' : 'Audio Idle' }}</span>
+  </div>
+
+  <!-- Bottom Floating Control Dock -->
+  <div class="bottom-floating-dock" [class.collapsed]="isDockCollapsed">
+    <div class="dock-header">
+      <span class="dock-title">Audio Controls</span>
+      <button class="dock-toggle-btn" (click)="toggleDock()" [title]="isDockCollapsed ? 'Expand Dock' : 'Collapse Dock'">
+        {{ isDockCollapsed ? '▲ Controls' : '▼ Hide' }}
+      </button>
+    </div>
+
+    <div class="dock-body" *ngIf="!isDockCollapsed">
+      <div class="dock-btn-row">
+        <button
+          class="dock-btn play-btn"
+          [class.active]="isPlaying"
+          (click)="toggleAudio()"
+        >
+          {{ isPlaying ? '⏸ Stop Audio' : '▶ Play Synth Demo' }}
+        </button>
+
+        <button
+          class="dock-btn toggle-btn"
+          [class.active]="autoRotate"
+          (click)="toggleAutoRotate()"
+        >
+          {{ autoRotate ? 'Auto-Rotate: On' : 'Auto-Rotate: Off' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

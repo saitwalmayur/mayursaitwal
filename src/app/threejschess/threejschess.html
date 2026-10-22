@@ -1,0 +1,251 @@
+<div class="fullscreen-scene-container" #viewportContainer>
+  <!-- Fullscreen 3D WebGL Canvas -->
+  <canvas #rendererCanvas class="webgl-canvas" (click)="onCanvasClick($event)"></canvas>
+
+  <!-- Top Floating Navigation Bar -->
+  <div class="top-floating-bar">
+    <a routerLink="/threejs" class="back-pill-btn">
+      <span class="arrow">←</span>
+      <span>Projects</span>
+    </a>
+    <div class="title-pill">♟️ 3D Chess Arena</div>
+
+
+    <!-- Historic Cloister 2K HDR Scene Toggle -->
+    <button
+      class="cloister-pill-btn"
+      [class.active]="showCloisterScene"
+      (click)="toggleCloisterScene()"
+      title="Toggle Historic Cloister 2K HDR 3D Scene Environment"
+    >
+      <span class="pill-icon">🏰</span>
+      <span>Cloister 2K: <strong>{{ showCloisterScene ? 'ON' : 'OFF' }}</strong></span>
+    </button>
+
+    <div class="status-pill" [class.check]="isCheck" [class.thinking]="isThinking">
+      <span class="status-dot"></span>
+      <span class="status-text">{{ gameStatusText }}</span>
+    </div>
+  </div>
+
+  <!-- LEFT SIDE: Game Match & AI Settings Panel -->
+  <div class="side-panel left-panel" [class.collapsed]="isLeftCollapsed">
+    <div class="panel-header">
+      <div class="panel-title-wrap" *ngIf="!isLeftCollapsed">
+        <span class="panel-icon">⚔️</span>
+        <span class="panel-title">Match</span>
+      </div>
+      <button
+        class="collapse-btn"
+        (click)="toggleLeft()"
+        [title]="isLeftCollapsed ? 'Expand Match Panel' : 'Collapse Match Panel'"
+      >
+        {{ isLeftCollapsed ? '▶' : '◀' }}
+      </button>
+    </div>
+
+    <div class="panel-body" *ngIf="!isLeftCollapsed">
+      <!-- Turn / Opponent Status Card -->
+      <div class="match-card">
+        <div class="player-row">
+          <div class="player-avatar ai-avatar">
+            <span>🤖</span>
+          </div>
+          <div class="player-meta">
+            <span class="player-label">AI Engine</span>
+            <span class="player-sub" [class.active-turn]="turn === 'b'">
+              {{ turn === 'b' ? (isThinking ? 'Thinking...' : 'Black Turn') : 'Waiting' }}
+            </span>
+          </div>
+          <div class="turn-indicator" *ngIf="turn === 'b' && !isGameOver">
+            <span class="pulse-ring"></span>
+          </div>
+        </div>
+
+        <div class="vs-divider">VS</div>
+
+        <div class="player-row">
+          <div class="player-avatar human-avatar">
+            <span>👤</span>
+          </div>
+          <div class="player-meta">
+            <span class="player-label">Player</span>
+            <span class="player-sub" [class.active-turn]="turn === 'w'">
+              {{ turn === 'w' ? 'White Turn' : 'Waiting' }}
+            </span>
+          </div>
+          <div class="turn-indicator" *ngIf="turn === 'w' && !isGameOver">
+            <span class="pulse-ring green"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Difficulty Level Selector -->
+      <div class="prop-section">
+        <span class="prop-label">AI Difficulty</span>
+        <div class="difficulty-pills">
+          <button
+            class="diff-btn"
+            [class.active]="aiDifficulty === 'easy'"
+            (click)="setDifficulty('easy')"
+            title="Depth 1: Casual & friendly for relaxed play"
+          >
+            Casual
+          </button>
+          <button
+            class="diff-btn"
+            [class.active]="aiDifficulty === 'medium'"
+            (click)="setDifficulty('medium')"
+            title="Depth 2: Solid tactical calculations with piece-square evaluation"
+          >
+            Tactical
+          </button>
+          <button
+            class="diff-btn"
+            [class.active]="aiDifficulty === 'hard'"
+            (click)="setDifficulty('hard')"
+            title="Depth 3: Alpha-Beta pruning, move ordering & deep checkmate pursuit"
+          >
+            Master
+          </button>
+        </div>
+      </div>
+
+
+      <!-- Environment Backdrop Card -->
+      <div class="prop-section env-section">
+        <span class="prop-label">Environment Backdrop</span>
+        <button
+          class="env-toggle-card"
+          [class.active]="showCloisterScene"
+          (click)="toggleCloisterScene()"
+          title="Toggle Historic Cloister Passage 2K HDR Panoramic Environment"
+        >
+          <div class="env-toggle-icon">🏰</div>
+          <div class="env-toggle-info">
+            <span class="env-toggle-title">Historic Cloister Passage</span>
+            <span class="env-toggle-desc">{{ showCloisterScene ? '2K HDR Scene Active' : 'Studio Backdrop Active' }}</span>
+          </div>
+          <span class="env-toggle-badge" [class.on]="showCloisterScene">
+            {{ showCloisterScene ? 'ACTIVE' : 'OFF' }}
+          </span>
+        </button>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="prop-section actions-section">
+        <button class="action-btn newgame-btn" (click)="resetGame()" title="Start a fresh match">
+          ↺ New Match
+        </button>
+        <button
+          class="action-btn undo-btn"
+          (click)="undoMove()"
+          [disabled]="isThinking || moveHistory.length === 0"
+          title="Take back your last move"
+        >
+          ↶ Undo Move
+        </button>
+      </div>
+
+      <!-- Captured Pieces -->
+      <div class="prop-section captured-section">
+        <span class="prop-label">Captured Pieces</span>
+        <div class="captured-row">
+          <span class="captured-label">White took:</span>
+          <div class="captured-pieces-list">
+            <span *ngFor="let p of capturedByWhite" class="captured-icon black-piece" [title]="p.type">
+              {{ p.type === 'p' ? '♟' : p.type === 'n' ? '♞' : p.type === 'b' ? '♝' : p.type === 'r' ? '♜' : p.type === 'q' ? '♛' : '♚' }}
+            </span>
+            <span *ngIf="capturedByWhite.length === 0" class="none-text">—</span>
+          </div>
+        </div>
+
+        <div class="captured-row">
+          <span class="captured-label">Black took:</span>
+          <div class="captured-pieces-list">
+            <span *ngFor="let p of capturedByBlack" class="captured-icon white-piece" [title]="p.type">
+              {{ p.type === 'p' ? '♙' : p.type === 'n' ? '♘' : p.type === 'b' ? '♗' : p.type === 'r' ? '♖' : p.type === 'q' ? '♕' : '♔' }}
+            </span>
+            <span *ngIf="capturedByBlack.length === 0" class="none-text">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDE: Moves Log & Camera View Panel -->
+  <div class="side-panel right-panel" [class.collapsed]="isRightCollapsed">
+    <div class="panel-header">
+      <button
+        class="collapse-btn"
+        (click)="toggleRight()"
+        [title]="isRightCollapsed ? 'Expand Move Log' : 'Collapse Move Log'"
+      >
+        {{ isRightCollapsed ? '◀' : '▶' }}
+      </button>
+      <div class="panel-title-wrap" *ngIf="!isRightCollapsed">
+        <span class="panel-icon">📜</span>
+        <span class="panel-title">Move History</span>
+      </div>
+    </div>
+
+    <div class="panel-body" *ngIf="!isRightCollapsed">
+      <!-- Camera Perspectives -->
+      <div class="prop-section">
+        <span class="prop-label">Camera Angle</span>
+        <div class="camera-views-grid">
+          <button class="cam-btn" (click)="setCameraView('player')" title="Standard Player Angle">
+            Player
+          </button>
+          <button class="cam-btn" (click)="setCameraView('opponent')" title="AI Opponent Perspective">
+            Opponent
+          </button>
+          <button class="cam-btn" (click)="setCameraView('top')" title="Direct Overhead 2.5D View">
+            Top View
+          </button>
+          <button class="cam-btn" (click)="setCameraView('isometric')" title="Isometric 3D Corner">
+            Isometric
+          </button>
+        </div>
+      </div>
+
+      <!-- Move History Notation Log -->
+      <div class="prop-section moves-log-section">
+        <div class="prop-label-row">
+          <span class="prop-label">Notation</span>
+          <span class="moves-count-badge">{{ moveHistory.length }} Turns</span>
+        </div>
+
+        <div class="moves-table-container">
+          <table class="moves-table" *ngIf="moveHistory.length > 0">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>White</th>
+                <th>Black</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let m of moveHistory; let i = index" [class.latest]="i === moveHistory.length - 1">
+                <td class="turn-num">{{ i + 1 }}.</td>
+                <td class="white-move">{{ m.white }}</td>
+                <td class="black-move">{{ m.black || '' }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div *ngIf="moveHistory.length === 0" class="empty-moves-msg">
+            Click on a white piece to reveal legal moves and begin the match!
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Tips -->
+      <div class="prop-info-box">
+        <span class="info-icon">💡</span>
+        <span class="info-text">
+          Click any friendly piece to illuminate valid moves. Left-drag to orbit the 3D board, scroll to zoom.
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,8 @@
+<div class="app-container" [class.threejs-fullscreen]="isThreeJs()">
+  <div class="top-section" [class.compact-mode]="isThreeJs()">
+    <app-top-panel [isCompact]="isThreeJs()"></app-top-panel>
+  </div>
+  <div class="main-content-wrapper" [class.fullscreen]="isThreeJs()">
+    <router-outlet></router-outlet>
+  </div>
+</div>

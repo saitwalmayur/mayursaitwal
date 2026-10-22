@@ -1,0 +1,190 @@
+:host {
+  display: block;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.page-content {
+  height: 100%;
+  width: 100%;
+  padding: 4rem 2rem;
+  position: relative;
+  overflow-y: auto;
+
+  // Use same theme style as Projects (transparent, neon glow, radial gradient)
+  background: transparent;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 242, 254, 0.4);
+    border-radius: 4px;
+    &:hover {
+      background: rgba(0, 242, 254, 0.6);
+    }
+  }
+
+  &::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(0, 242, 254, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: -1;
+  }
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 3rem;
+
+  h1 {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(90deg, #00f2fe, #4facfe);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: fadeInDown 1s ease-out;
+  }
+
+  p {
+    font-size: 1.25rem;
+    color: rgba(255, 255, 255, 0.8);
+    animation: fadeInUp 1s ease-out 0.3s;
+    animation-fill-mode: both;
+  }
+}
+
+.category-grid {
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+.category-card {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 18px;
+  padding: 2rem 1.5rem;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.25);
+  transition: transform 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+  cursor: pointer;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+
+  .card-icon {
+    font-size: 2.4rem;
+    margin-bottom: 0.8rem;
+    filter: drop-shadow(0 4px 12px rgba(0, 242, 254, 0.3));
+    transition: transform 0.3s ease;
+  }
+
+  h2 {
+    font-size: 1.45rem;
+    color: #fff;
+    margin: 0 0 0.65rem 0;
+    text-align: center;
+  }
+
+  p {
+    margin: 0 0 1.2rem 0;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.75);
+    line-height: 1.5;
+    font-size: 0.95rem;
+    flex: 1;
+  }
+
+  .card-badge {
+    display: inline-block;
+    padding: 0.3rem 0.8rem;
+    border-radius: 999px;
+    background: rgba(0, 242, 254, 0.12);
+    border: 1px solid rgba(0, 242, 254, 0.3);
+    color: #00f2fe;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  &:hover {
+    transform: translateY(-6px);
+    background: rgba(0, 242, 254, 0.08);
+    border-color: rgba(0, 242, 254, 0.4);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 242, 254, 0.2);
+
+    .card-icon {
+      transform: scale(1.15) rotate(5deg);
+    }
+
+    .card-badge {
+      background: rgba(0, 242, 254, 0.22);
+      border-color: #00f2fe;
+    }
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .page-content {
+    padding: 3rem 1.25rem;
+  }
+
+  .header {
+    h1 {
+      font-size: 2.6rem;
+    }
+
+    p {
+      font-size: 1.05rem;
+    }
+  }
+}
+

@@ -1,0 +1,154 @@
+<div class="room-page">
+  <!-- 3D Canvas -->
+  <canvas #renderCanvas class="render-canvas"></canvas>
+
+  <!-- Loading Screen -->
+  <div class="loading-overlay" *ngIf="loading()">
+    <div class="loader-card">
+      <div class="spinner"></div>
+      <div class="loader-text">Loading Cozy Room 3D…</div>
+      <div class="loader-sub">Preparing GLB meshes & PBR shaders</div>
+    </div>
+  </div>
+
+  <!-- Top Floating Bar -->
+  <header class="top-bar">
+    <div class="nav-left">
+      <a routerLink="/babylonjs" class="back-link" title="Back to Babylon.js Showcase">
+        <span class="icon">‹</span>
+        <span class="text">Babylon.js</span>
+      </a>
+      <div class="divider"></div>
+      <div class="title-group">
+        <h1>Cozy Isometric Room</h1>
+        <span class="badge">Babylon.js 7 PBR</span>
+      </div>
+    </div>
+
+    <!-- Quick Camera & Lighting Controls -->
+    <div class="controls-pill">
+      <!-- Time of Day / Mood -->
+      <div class="btn-group" title="Lighting Mood">
+        <button
+          class="pill-btn"
+          [class.active]="mood() === 'day'"
+          (click)="setMood('day')"
+          title="Cozy Daylight (Reference)"
+        >
+          ☀️ <span class="label">Day</span>
+        </button>
+        <button
+          class="pill-btn"
+          [class.active]="mood() === 'sunset'"
+          (click)="setMood('sunset')"
+          title="Golden Hour Sunset"
+        >
+          🌇 <span class="label">Sunset</span>
+        </button>
+        <button
+          class="pill-btn"
+          [class.active]="mood() === 'night'"
+          (click)="setMood('night')"
+          title="Cozy Night Mood"
+        >
+          🌙 <span class="label">Night</span>
+        </button>
+      </div>
+
+      <div class="pill-divider"></div>
+
+      <!-- Lamp Toggle -->
+      <button
+        class="pill-btn lamp-btn"
+        [class.active]="lampOn()"
+        (click)="toggleLamp()"
+        title="Toggle Wall Lamp"
+      >
+        💡 <span class="label">{{ lampOn() ? 'Lamp ON' : 'Lamp OFF' }}</span>
+      </button>
+
+      <div class="pill-divider"></div>
+
+      <!-- Camera Mode (Ortho / Perspective) -->
+      <button
+        class="pill-btn"
+        [class.active]="isOrtho()"
+        (click)="toggleCameraProjection()"
+        [title]="isOrtho() ? 'Switch to Perspective 3D' : 'Switch to Isometric 2.5D'"
+      >
+        📐 <span class="label">{{ isOrtho() ? 'Isometric' : 'Perspective' }}</span>
+      </button>
+
+      <!-- Auto Rotate -->
+      <button
+        class="pill-btn"
+        [class.active]="autoRotate()"
+        (click)="toggleAutoRotate()"
+        title="Toggle Turntable Rotation"
+      >
+        🔄 <span class="label">Turntable</span>
+      </button>
+
+      <!-- Reset Camera View -->
+      <button
+        class="pill-btn reset-btn"
+        (click)="resetCameraView()"
+        title="Reset to Exact Reference Isometric View"
+      >
+        🎯 <span class="label">Reset View</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Interactive Click Notification / Inspector -->
+  <div class="interaction-toast" *ngIf="lastInteracted()">
+    <span class="toast-icon">✨</span>
+    <span class="toast-text">{{ lastInteracted() }}</span>
+  </div>
+
+  <!-- Bottom Floating View Preset Bar -->
+  <div class="bottom-bar">
+    <div class="camera-presets">
+      <span class="presets-label">Views:</span>
+      <button
+        class="preset-chip"
+        [class.active]="currentPreset() === 'iso'"
+        (click)="focusPreset('iso')"
+      >
+        📸 Isometric Room
+      </button>
+      <button
+        class="preset-chip"
+        [class.active]="currentPreset() === 'sofa'"
+        (click)="focusPreset('sofa')"
+      >
+        🛋️ Loveseat & Pillows
+      </button>
+      <button
+        class="preset-chip"
+        [class.active]="currentPreset() === 'coffee'"
+        (click)="focusPreset('coffee')"
+      >
+        🍩 Coffee & Donut
+      </button>
+      <button
+        class="preset-chip"
+        [class.active]="currentPreset() === 'window'"
+        (click)="focusPreset('window')"
+      >
+        🪟 Window & Armchair
+      </button>
+      <button
+        class="preset-chip"
+        [class.active]="currentPreset() === 'plant'"
+        (click)="focusPreset('plant')"
+      >
+        🪴 Corner Plant
+      </button>
+    </div>
+
+    <div class="hint-pill">
+      <span>🖱️ Drag to orbit · Scroll to zoom · Click furniture to interact</span>
+    </div>
+  </div>
+</div>

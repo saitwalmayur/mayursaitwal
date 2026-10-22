@@ -1,0 +1,242 @@
+<div class="unity-page">
+  <div class="content-wrapper">
+    <!-- Hero Section -->
+    <header class="hero-section">
+      <div class="badge-pill">
+        <span class="pulse-dot"></span>
+        Game Engine Architecture & Spatial Computing
+      </div>
+      <h1 class="gradient-title">Unity 3D Portfolio</h1>
+      <p class="hero-desc">
+        Production-grade 3D games, multiplayer networked infrastructure (Photon/PlayFab),
+        spatial computing on Apple Vision Pro, and commercial Unity Asset Store templates engineered in C#.
+      </p>
+
+      <!-- Key Stats Bar -->
+      <div class="stats-ribbon">
+        <div class="stat-pill">
+          <span class="stat-icon">🎮</span>
+          <div class="stat-meta">
+            <span class="stat-number">10+</span>
+            <span class="stat-text">Games Shipped</span>
+          </div>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-icon">🥽</span>
+          <div class="stat-meta">
+            <span class="stat-number">2x Gold</span>
+            <span class="stat-text">Apple Vision Pro Awards</span>
+          </div>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-icon">📦</span>
+          <div class="stat-meta">
+            <span class="stat-number">6+</span>
+            <span class="stat-text">Asset Store Templates</span>
+          </div>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-icon">⚡</span>
+          <div class="stat-meta">
+            <span class="stat-number">100k+</span>
+            <span class="stat-text">Multiplayer Matches</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Filters & Search Toolbar -->
+    <div class="filter-toolbar">
+      <div class="category-tabs">
+        <button
+          class="tab-btn"
+          [class.active]="activeCategory === 'all'"
+          (click)="setCategory('all')"
+        >
+          All ({{ projects.length }})
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="activeCategory === 'enterprise'"
+          (click)="setCategory('enterprise')"
+        >
+          🥽 Enterprise & VR
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="activeCategory === 'assetstore'"
+          (click)="setCategory('assetstore')"
+        >
+          📦 Asset Store Packages
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="activeCategory === 'webgames'"
+          (click)="setCategory('webgames')"
+        >
+          🕹️ Playable Web Games
+        </button>
+      </div>
+
+      <!-- Quick Search Input -->
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          placeholder="Filter by title or tech (e.g. visionOS, Photon, Physics)..."
+          class="search-input"
+        />
+        <button class="clear-search" *ngIf="searchQuery" (click)="searchQuery = ''">✕</button>
+      </div>
+    </div>
+
+    <!-- Projects Grid -->
+    <div class="projects-grid">
+      <div
+        class="unity-card"
+        *ngFor="let proj of filteredProjects"
+        [class]="'cat-' + proj.category"
+      >
+        <!-- Card Thumbnail / Cover -->
+        <div class="card-media">
+          <img
+            *ngIf="proj.imageUrl"
+            [src]="proj.imageUrl"
+            [alt]="proj.name"
+            class="media-img"
+            loading="lazy"
+          />
+          <div *ngIf="!proj.imageUrl" class="media-fallback">
+            <span class="fallback-icon">{{ proj.icon }}</span>
+          </div>
+          <span class="category-badge">{{ proj.categoryLabel }}</span>
+        </div>
+
+        <!-- Card Body -->
+        <div class="card-body">
+          <div class="card-header">
+            <div class="title-row">
+              <span class="project-icon">{{ proj.icon }}</span>
+              <h3 class="project-name">{{ proj.name }}</h3>
+            </div>
+            <p class="project-tagline">{{ proj.tagline }}</p>
+          </div>
+
+          <p class="project-desc">{{ proj.description }}</p>
+
+          <!-- Engineering Highlights -->
+          <div class="features-list">
+            <div class="feature-item" *ngFor="let feat of proj.features">
+              <span class="check-icon">✓</span>
+              <span>{{ feat }}</span>
+            </div>
+          </div>
+
+          <!-- Tech Stack Tags -->
+          <div class="tech-tags-row">
+            <span class="tech-tag" *ngFor="let tech of proj.techStack">{{ tech }}</span>
+          </div>
+
+          <!-- Card Actions Footer -->
+          <div class="card-footer">
+            <div class="action-links">
+              <a
+                *ngFor="let link of proj.links"
+                [href]="link.url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="action-btn"
+                [class.play-btn]="link.type === 'play'"
+                [class.store-btn]="link.type === 'store'"
+              >
+                {{ link.label }}
+              </a>
+              <button
+                *ngIf="proj.architectureDetails"
+                class="action-btn specs-btn"
+                (click)="openSpecs(proj)"
+              >
+                Tech Specs
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="filteredProjects.length === 0">
+      <span class="empty-icon">🔍</span>
+      <h3>No projects matched your criteria</h3>
+      <p>Try searching for a different keyword or switch categories.</p>
+      <button class="reset-filter-btn" (click)="activeCategory = 'all'; searchQuery = ''">
+        Reset All Filters
+      </button>
+    </div>
+
+    <!-- Technical Specs Modal -->
+    <div class="modal-backdrop" *ngIf="selectedProject" (click)="closeSpecs()">
+      <div class="specs-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title-row">
+            <span class="modal-icon">{{ selectedProject.icon }}</span>
+            <div>
+              <h3>{{ selectedProject.name }}</h3>
+              <span class="modal-category">{{ selectedProject.categoryLabel }}</span>
+            </div>
+          </div>
+          <button class="close-modal" (click)="closeSpecs()">✕</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="modal-section">
+            <h4>Architecture & Implementation Details</h4>
+            <p class="specs-text">{{ selectedProject.architectureDetails }}</p>
+          </div>
+
+          <div class="modal-section" *ngIf="selectedProject.metrics">
+            <h4>Key Metrics & Accomplishments</h4>
+            <div class="metrics-pill">{{ selectedProject.metrics }}</div>
+          </div>
+
+          <div class="modal-section">
+            <h4>Full Technology Stack</h4>
+            <div class="tech-tags-row">
+              <span class="tech-tag" *ngFor="let t of selectedProject.techStack">{{ t }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <a
+            *ngFor="let link of selectedProject.links"
+            [href]="link.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="action-btn play-btn"
+          >
+            {{ link.label }}
+          </a>
+          <button class="action-btn" (click)="closeSpecs()">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cross-Link to Three.js Experiments -->
+    <div class="threejs-banner">
+      <div class="banner-content">
+        <span class="banner-badge">Web 3D Experiments</span>
+        <h3>Looking for In-Browser WebGL & Three.js?</h3>
+        <p>
+          Explore procedural 3D open worlds, custom GLSL vertex shaders, interactive Web Audio visualizers,
+          and intelligent minimax 3D chess built directly with Angular and Three.js.
+        </p>
+      </div>
+      <a routerLink="/threejs" class="banner-btn">
+        <span>Launch Three.js Hub</span>
+        <span class="btn-arrow">→</span>
+      </a>
+    </div>
+  </div>
+</div>

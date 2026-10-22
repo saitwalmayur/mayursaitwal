@@ -1,0 +1,46 @@
+﻿<div class="page-content">
+  <div class="content-inner">
+    <!-- Header Section -->
+    <div class="header">
+      <div class="badge-pill">Interactive Experiments</div>
+      <h1>Babylon.js Projects</h1>
+      <p>
+        Real-time 3D scenes, PBR materials, physics simulations, and immersive WebGL experiences built with Babylon.js 7. Select any experiment below to launch it.
+      </p>
+    </div>
+
+    <!-- Project List Grid -->
+    <div class="projects-grid">
+      <a
+        *ngFor="let proj of projects"
+        class="project-card"
+        [routerLink]="proj.route"
+        [style.background]="proj.gradient"
+      >
+        <div class="card-top">
+          <div class="card-icon">{{ proj.icon }}</div>
+          <span class="launch-pill">Launch Demo ↗</span>
+        </div>
+
+        <div class="card-header">
+          <h3>{{ proj.title }}</h3>
+        </div>
+
+        <p class="card-tagline">{{ proj.tagline }}</p>
+        <p class="card-desc">{{ proj.description }}</p>
+
+        <div class="features-list">
+          <span class="feature-bullet" *ngFor="let feat of proj.features">
+            ✓ {{ feat }}
+          </span>
+        </div>
+
+        <div class="card-footer">
+          <div class="tags-row">
+            <span class="tag" *ngFor="let tag of proj.tags">{{ tag }}</span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>

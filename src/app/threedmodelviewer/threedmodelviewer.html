@@ -1,0 +1,155 @@
+<div
+  class="fullscreen-scene-container"
+  #viewportContainer
+  (dragover)="onDragOver($event)"
+  (dragleave)="onDragLeave($event)"
+  (drop)="onDrop($event)"
+>
+  <!-- Fullscreen WebGL Canvas -->
+  <canvas #rendererCanvas class="webgl-canvas"></canvas>
+
+  <!-- Top Floating Navigation Bar -->
+  <div class="top-floating-bar">
+    <a routerLink="/threejs" class="back-pill-btn">
+      <span class="arrow">←</span>
+      <span>Projects</span>
+    </a>
+    <div class="title-pill">🛸 3D Model Studio</div>
+    <button class="reset-pill-btn" (click)="resetCamera()" title="Reset Camera View">
+      ↺ Reset View
+    </button>
+  </div>
+
+  <!-- Model Error Notification Banner -->
+  <div class="model-error-banner" *ngIf="errorMessage">
+    <div class="error-badge">
+      <span class="error-icon">⚠️</span>
+    </div>
+    <div class="error-text-wrap">
+      <span class="error-title">Model Load Failed</span>
+      <span class="error-desc">{{ errorMessage }}</span>
+    </div>
+    <button class="error-dismiss-btn" (click)="dismissError()" title="Dismiss error">
+      ✕
+    </button>
+  </div>
+
+  <!-- Floating Model HUD Overlay -->
+  <div class="floating-model-hud">
+    <div class="hud-item">
+      <span class="hud-label">Triangles:</span>
+      <span class="hud-val">{{ modelStats.triangles | number }}</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Vertices:</span>
+      <span class="hud-val">{{ modelStats.vertices | number }}</span>
+    </div>
+    <div class="hud-item format-badges">
+      <span class="hud-label">Formats:</span>
+      <span class="format-pill">FBX</span>
+      <span class="format-pill">OBJ</span>
+      <span class="format-pill">GLB</span>
+    </div>
+    <div class="hud-item" *ngIf="customFileName">
+      <span class="hud-label">File:</span>
+      <span class="hud-val file-name" [title]="customFileName">{{ customFileName }}</span>
+    </div>
+  </div>
+
+  <!-- Drag and Drop Overlay -->
+  <div class="drag-drop-overlay" *ngIf="isDraggingFile">
+    <div class="drag-drop-box">
+      <div class="drag-icon">📦</div>
+      <h3>Drop 3D Model to Load</h3>
+      <p>Supports FBX, OBJ, GLB, and GLTF</p>
+    </div>
+  </div>
+
+  <!-- Loading Overlay for File Upload -->
+  <div class="loading-overlay" *ngIf="isLoadingCustomModel">
+    <div class="spinner"></div>
+    <span>Loading 3D Model...</span>
+  </div>
+
+  <!-- Hidden File Input for Custom FBX/OBJ/GLB Upload -->
+  <input
+    type="file"
+    #fileInput
+    (change)="onFileSelected($event)"
+    accept=".glb,.gltf,.fbx,.obj"
+    style="display: none"
+  />
+
+  <!-- Bottom Floating Control Dock -->
+  <div class="bottom-floating-dock" [class.collapsed]="isDockCollapsed">
+    <div class="dock-header">
+      <span class="dock-title">Model Controls</span>
+      <button class="dock-toggle-btn" (click)="toggleDock()" [title]="isDockCollapsed ? 'Expand Dock' : 'Collapse Dock'">
+        {{ isDockCollapsed ? '▲ Controls' : '▼ Hide' }}
+      </button>
+    </div>
+
+    <div class="dock-body" *ngIf="!isDockCollapsed">
+      <!-- Models Row -->
+      <div class="dock-group">
+        <span class="dock-label">Models:</span>
+        <div class="dock-btn-row">
+          <button
+            class="dock-btn"
+            [class.active]="activeModelType === 'drone'"
+            (click)="loadBuiltInModel('drone')"
+          >
+            Drone
+          </button>
+          <button
+            class="dock-btn"
+            [class.active]="activeModelType === 'helmet'"
+            (click)="loadBuiltInModel('helmet')"
+          >
+            Cyber Helmet
+          </button>
+          <button
+            class="dock-btn"
+            [class.active]="activeModelType === 'crystal'"
+            (click)="loadBuiltInModel('crystal')"
+          >
+            Crystal
+          </button>
+          <button
+            class="dock-btn upload-btn"
+            [class.active]="activeModelType === 'custom'"
+            (click)="triggerFileUpload()"
+            title="Upload custom 3D model (.fbx, .obj, .glb, .gltf)"
+          >
+            📁 Upload 3D (.fbx, .obj, .glb)
+          </button>
+        </div>
+      </div>
+
+      <!-- Toggles Row -->
+      <div class="dock-toggles-row">
+        <button
+          class="dock-btn toggle-btn"
+          [class.active]="showGrid"
+          (click)="toggleGrid()"
+        >
+          {{ showGrid ? 'Grid: On' : 'Grid: Off' }}
+        </button>
+        <button
+          class="dock-btn toggle-btn"
+          [class.active]="wireframe"
+          (click)="toggleWireframe()"
+        >
+          {{ wireframe ? 'Solid' : 'Wireframe' }}
+        </button>
+        <button
+          class="dock-btn toggle-btn"
+          [class.active]="autoRotate"
+          (click)="toggleAutoRotate()"
+        >
+          {{ autoRotate ? 'Auto-Rotate: On' : 'Auto-Rotate: Off' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

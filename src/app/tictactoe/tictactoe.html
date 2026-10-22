@@ -1,0 +1,140 @@
+<div class="tictactoe-container" #viewportContainer>
+  <!-- Fullscreen 3D Canvas with Responsive Pointer Tracking -->
+  <canvas
+    #rendererCanvas
+    class="webgl-canvas"
+    (pointerdown)="onPointerDown($event)"
+    (pointerup)="onPointerUp($event)"
+    (pointermove)="onCanvasPointerMove($event)"
+  ></canvas>
+
+  <!-- Top Floating Controls Header -->
+  <header class="top-bar">
+    <div class="left-group">
+      <a routerLink="/threejs" class="nav-back-btn" title="Back to Three.js Projects">
+        <span class="arrow">←</span>
+        <span>Projects</span>
+      </a>
+      <div class="title-badge">
+        <span class="icon">✨</span>
+        <span>3D Tic-Tac-Toe</span>
+      </div>
+    </div>
+
+    <!-- Mode Selector -->
+    <div class="mode-pills">
+      <button
+        class="mode-btn"
+        [class.active]="gameMode === 'ai'"
+        (click)="setGameMode('ai')"
+      >
+        🤖 vs AI
+      </button>
+      <button
+        class="mode-btn"
+        [class.active]="gameMode === 'pvp'"
+        (click)="setGameMode('pvp')"
+      >
+        👥 2 Players
+      </button>
+
+      <button
+        *ngIf="gameMode === 'ai'"
+        class="diff-btn"
+        (click)="aiDifficulty = aiDifficulty === 'hard' ? 'easy' : 'hard'"
+        [title]="'Difficulty: ' + aiDifficulty"
+      >
+        {{ aiDifficulty === 'hard' ? '🧠 Master' : '⚡ Casual' }}
+      </button>
+    </div>
+
+    <!-- Quick Action Buttons -->
+    <div class="right-group">
+      <button class="action-btn" (click)="resetCamera()" title="Reset Camera View">
+        🎥 Cam
+      </button>
+      <button class="action-btn" (click)="toggleMute()" [title]="isSoundMuted ? 'Unmute' : 'Mute'">
+        {{ isSoundMuted ? '🔇' : '🔊' }}
+      </button>
+      <button class="action-btn restart" (click)="resetGame()" title="Restart Board">
+        🔄 Restart
+      </button>
+    </div>
+  </header>
+
+  <!-- Center Status / Turn Pill -->
+  <div class="turn-banner" *ngIf="!winner">
+    <div class="turn-pill" [class.turn-x]="currentTurn === 'X'" [class.turn-o]="currentTurn === 'O'">
+      <span class="turn-icon">{{ currentTurn }}</span>
+      <span class="turn-text">
+        {{ isAiThinking ? 'AI is calculating move...' : (gameMode === 'ai' && currentTurn === 'O' ? 'AI Turn' : currentTurn + '\'s Turn (Click any section to place)') }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Scoreboard (Floating Bottom Left) -->
+  <div class="scoreboard-card">
+    <div class="score-item x-score">
+      <span class="symbol">X</span>
+      <span class="count">{{ scores.X }}</span>
+    </div>
+    <div class="score-divider">:</div>
+    <div class="score-item o-score">
+      <span class="symbol">O</span>
+      <span class="count">{{ scores.O }}</span>
+    </div>
+    <div class="score-item tie-score">
+      <span class="label">Draws</span>
+      <span class="count">{{ scores.draws }}</span>
+    </div>
+  </div>
+
+  <!-- Interactive 3x3 Placement Section (Floating Bottom Right) -->
+  <div class="placement-section-card">
+    <div class="placement-header">
+      <span class="placement-title">Placement Section</span>
+      <span class="placement-badge" [class.is-x]="currentTurn === 'X'" [class.is-o]="currentTurn === 'O'">
+        {{ currentTurn }} to place
+      </span>
+    </div>
+
+    <div class="placement-grid">
+      <button
+        *ngFor="let cell of board; let idx = index"
+        class="placement-cell-btn"
+        [class.cell-x]="cell === 'X'"
+        [class.cell-o]="cell === 'O'"
+        [class.hovered]="hoveredTileIndex === idx"
+        [class.winning]="winningLine && winningLine.includes(idx)"
+        [disabled]="cell !== null || !!winner || isAiThinking"
+        (click)="makeMove(idx)"
+        (mouseenter)="onCellMouseEnter(idx)"
+        (mouseleave)="onCellMouseLeave()"
+        [title]="cell ? 'Occupied by ' + cell : 'Click to place ' + currentTurn + ' in section ' + (idx + 1)"
+      >
+        <span class="cell-content">{{ cell || '+' }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Game Over Celebration Modal -->
+  <div class="gameover-overlay" *ngIf="winner">
+    <div class="gameover-card">
+      <div class="result-badge" [class.tie]="winner === 'draw'">
+        {{ winner === 'draw' ? '🤝 MATCH TIED' : '👑 VICTORY!' }}
+      </div>
+
+      <h2 class="result-title">
+        {{ winner === 'draw' ? 'Well Played! It\'s a Draw' : (winner === 'X' ? 'Player X Wins!' : 'Player O Wins!') }}
+      </h2>
+
+      <p class="result-sub" *ngIf="winner !== 'draw'">
+        {{ gameMode === 'ai' && winner === 'O' ? 'The AI was unbeatable this time!' : '3 in a row completed!' }}
+      </p>
+
+      <button class="play-again-btn" (click)="resetGame()">
+        Play Again 🔄
+      </button>
+    </div>
+  </div>
+</div>

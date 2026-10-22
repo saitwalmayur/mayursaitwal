@@ -1,0 +1,73 @@
+<!-- Standard Top Navigation Bar (Shown on non-Three.js pages) -->
+<nav class="nav-menu" *ngIf="!isCompact()">
+  <ul class="nav-links">
+    <li>
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a>
+    </li>
+    <li>
+      <a routerLink="/experience" routerLinkActive="active">Experience</a>
+    </li>
+
+    <li>
+      <a routerLink="/showcase" routerLinkActive="active">Showcase</a>
+    </li>
+
+    <li>
+      <a routerLink="/contact" routerLinkActive="active">Contact</a>
+    </li>
+  </ul>
+</nav>
+
+<!-- Compact Floating Circular Button & Menu (Shown on Three.js Fullscreen pages) -->
+<div class="circular-menu-container" *ngIf="isCompact()">
+  <button
+    class="circular-fab-btn"
+    [class.active]="menuOpen()"
+    (click)="toggleMenu($event)"
+    aria-label="Toggle Navigation Menu"
+    title="Navigation Menu"
+  >
+    <div class="hamburger-icon" [class.open]="menuOpen()">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </button>
+
+  <!-- Floating Glassmorphic Dropdown Menu -->
+  <div class="floating-dropdown-menu" *ngIf="menuOpen()">
+    <div class="dropdown-header">
+      <span class="dropdown-title">Navigation</span>
+      <button class="close-btn" (click)="closeMenu()" title="Close menu">✕</button>
+    </div>
+
+    <ul class="dropdown-nav-list">
+      <li>
+        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">
+          <span class="item-icon">🏠</span>
+          <span class="item-text">Home</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/experience" routerLinkActive="active" (click)="closeMenu()">
+          <span class="item-icon">💼</span>
+          <span class="item-text">Experience</span>
+        </a>
+      </li>
+
+      <li>
+        <a routerLink="/showcase" routerLinkActive="active" (click)="closeMenu()">
+          <span class="item-icon">🎨</span>
+          <span class="item-text">Showcase</span>
+        </a>
+      </li>
+
+      <li>
+        <a routerLink="/contact" routerLinkActive="active" (click)="closeMenu()">
+          <span class="item-icon">✉️</span>
+          <span class="item-text">Contact</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>

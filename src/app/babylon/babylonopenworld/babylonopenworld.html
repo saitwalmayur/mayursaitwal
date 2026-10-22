@@ -1,0 +1,159 @@
+<div class="openworld-container">
+  <!-- 3D WebGL Canvas -->
+  <canvas #renderCanvas class="render-canvas"></canvas>
+
+  <!-- Top Navigation Panel for Global Navigation -->
+  <app-top-panel [isCompact]="true"></app-top-panel>
+
+  <!-- Loading Screen Overlay -->
+  <div class="loading-overlay" *ngIf="loading()">
+    <div class="loader-box">
+      <div class="spinner"></div>
+      <div class="loader-title">Generating Procedural Open World…</div>
+      <div class="loader-sub">Computing Perlin elevation mesh, instancing biomes & PBR atmospherics</div>
+    </div>
+  </div>
+
+  <!-- Top HUD Bar -->
+  <header class="top-hud">
+    <div class="left-group">
+      <a routerLink="/babylonjs" class="back-link" title="Back to Babylon.js Showcase">
+        <span class="icon">‹</span>
+        <span class="text">Babylon.js</span>
+      </a>
+
+      <div class="title-tag">
+        <span class="status-dot"></span>
+        <span class="title-main">Procedural Open World 3D</span>
+        <span class="seed-badge">Seed: #{{ currentSeed() }}</span>
+      </div>
+    </div>
+
+    <!-- Live Metrics Pill -->
+    <div class="stats-pill">
+      <div class="stat-item">
+        <span class="stat-label">FPS</span>
+        <span class="stat-val" [class.good]="fps() >= 50">{{ fps() }}</span>
+      </div>
+      <div class="stat-sep"></div>
+      <div class="stat-item">
+        <span class="stat-label">Objects</span>
+        <span class="stat-val">{{ objectCount() }}</span>
+      </div>
+      <div class="stat-sep"></div>
+      <div class="stat-item">
+        <span class="stat-label">Triangles</span>
+        <span class="stat-val">{{ terrainTriangles() | number }}</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Bottom Floating Glassmorphic Control Deck -->
+  <footer class="control-deck">
+    <div class="deck-row main-actions">
+      <!-- Biome Selector -->
+      <div class="control-group">
+        <span class="group-label">Biome</span>
+        <div class="chips-wrap">
+          <button
+            *ngFor="let b of biomesList"
+            class="chip-btn"
+            [class.active]="currentBiome() === b.id"
+            (click)="selectBiome(b.id)"
+          >
+            <span>{{ b.icon }}</span>
+            <span>{{ b.name }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Time of Day -->
+      <div class="control-group">
+        <span class="group-label">Atmosphere</span>
+        <div class="chips-wrap">
+          <button
+            *ngFor="let t of timeList"
+            class="chip-btn"
+            [class.active]="currentTimeOfDay() === t.id"
+            (click)="setTimeOfDay(t.id)"
+          >
+            <span>{{ t.icon }}</span>
+            <span>{{ t.label }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Seed Generator -->
+      <div class="control-group action-group">
+        <span class="group-label">Procedural Seed</span>
+        <button class="primary-action-btn" (click)="regenerateWorld()" title="Regenerate world with random Perlin seed">
+          <span>🎲</span>
+          <span>New World</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Secondary Controls Toolbar -->
+    <div class="deck-row secondary-actions">
+      <!-- Camera Mode Toggle -->
+      <div class="mode-toggles">
+        <span class="sec-label">Camera:</span>
+        <button
+          class="sub-btn"
+          [class.active]="currentCameraMode() === 'orbit'"
+          (click)="setCameraMode('orbit')"
+        >
+          🔄 Orbit
+        </button>
+        <button
+          class="sub-btn"
+          [class.active]="currentCameraMode() === 'fly'"
+          (click)="setCameraMode('fly')"
+        >
+          🚀 Drone Fly
+        </button>
+        <button
+          class="sub-btn"
+          *ngIf="currentCameraMode() === 'orbit'"
+          [class.active]="autoOrbit()"
+          (click)="toggleAutoOrbit()"
+          title="Toggle smooth 360 cinematic rotation"
+        >
+          {{ autoOrbit() ? '⏸ Pause Orbit' : '▶ Auto Orbit' }}
+        </button>
+      </div>
+
+      <!-- Quick Toggles -->
+      <div class="quick-toggles">
+        <button
+          class="sub-btn"
+          [class.active]="showWater()"
+          (click)="toggleWater()"
+        >
+          💧 Water: {{ showWater() ? 'ON' : 'OFF' }}
+        </button>
+        <button
+          class="sub-btn"
+          [class.active]="showVegetation()"
+          (click)="toggleVegetation()"
+        >
+          🌲 Foliage: {{ showVegetation() ? 'ON' : 'OFF' }}
+        </button>
+        <button
+          class="sub-btn sound-btn"
+          [class.active]="soundEnabled()"
+          (click)="toggleSound()"
+          title="Ambient Procedural Mountain Wind"
+        >
+          {{ soundEnabled() ? '🔊 Wind Audio' : '🔇 Mute' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Interactive Hint -->
+    <div class="bottom-hint">
+      <span *ngIf="currentCameraMode() === 'orbit'">🖱️ Drag to orbit view · Scroll to zoom · Right-click drag to pan</span>
+      <span *ngIf="currentCameraMode() === 'fly'">⌨️ Use W/A/S/D or Arrow keys to fly · Drag mouse to look around</span>
+    </div>
+  </footer>
+</div>

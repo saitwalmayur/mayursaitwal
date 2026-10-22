@@ -1,0 +1,237 @@
+<div
+  #viewportContainer
+  class="openworld-container"
+  (pointerdown)="onPointerDown($event)"
+  (pointermove)="onPointerMove($event)"
+  (pointerup)="onPointerUp()"
+  (pointerleave)="onPointerLeave()"
+  (wheel)="onWheel($event)"
+>
+  <!-- 3D Canvas -->
+  <canvas #rendererCanvas class="webgl-canvas"></canvas>
+
+  <!-- Top-Left Player HUD & Stats -->
+  <div class="hud-top-left glass-panel">
+    <div class="hud-header">
+      <a routerLink="/threejs" class="back-link" title="Return to Three.js Hub">
+        <span class="back-arrow">←</span>
+        <span>Hub</span>
+      </a>
+      <div class="biome-pill" [class]="activeBiomeId">
+        <span class="biome-icon">{{ currentBiome.icon }}</span>
+        <span class="biome-name">{{ currentBiome.name }}</span>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-item">
+        <span class="stat-label">Position</span>
+        <span class="stat-value">X: {{ playerStats.posX }} | Z: {{ playerStats.posZ }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Altitude</span>
+        <span class="stat-value">Y: {{ playerStats.posY }}m</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Movement</span>
+        <span class="stat-value highlight">{{ playerStats.state }} ({{ playerStats.speed }} km/h)</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">World Streaming</span>
+        <span class="stat-value">{{ playerStats.activeChunks }} Chunks | {{ playerStats.fps }} FPS</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top-Right Mini-Map Radar -->
+  <div class="hud-top-right">
+    <div class="minimap-card glass-panel">
+      <div class="radar-circle">
+        <div class="radar-grid"></div>
+        <div class="radar-ring r1"></div>
+        <div class="radar-ring r2"></div>
+        <div class="radar-crosshair"></div>
+        <span class="compass-label north">N</span>
+        <span class="compass-label east">E</span>
+        <span class="compass-label south">S</span>
+        <span class="compass-label west">W</span>
+        <!-- Character Pointer Arrow -->
+        <div
+          class="player-blip"
+          [style.transform]="'rotate(' + (-miniMapAngle + 3.14159) + 'rad)'"
+        >
+          <div class="arrow-indicator"></div>
+        </div>
+      </div>
+      <div class="minimap-label">Chunk Radar</div>
+    </div>
+  </div>
+
+  <!-- Top-Center Quick Help Toggle -->
+  <div class="hud-top-center">
+    <button class="glass-btn help-btn" (click)="toggleHelp()">
+      <span class="btn-icon">⌨️</span>
+      <span>Controls Guide</span>
+    </button>
+  </div>
+
+  <!-- Keyboard Controls Modal Overlay -->
+  <div class="controls-modal glass-panel" *ngIf="isHelpOpen">
+    <div class="modal-header">
+      <h3>Controls & Hotkeys</h3>
+      <button class="close-modal-btn" (click)="toggleHelp()">✕</button>
+    </div>
+    <div class="keys-list">
+      <div class="key-row">
+        <div class="key-badge">W A S D / ↑ ← ↓ →</div>
+        <div class="key-desc">Third-person Character Movement</div>
+      </div>
+      <div class="key-row">
+        <div class="key-badge">Space</div>
+        <div class="key-desc">Jump & Hop across Terrain</div>
+      </div>
+      <div class="key-row">
+        <div class="key-badge">Left Shift</div>
+        <div class="key-desc">Sprint / Fast Run</div>
+      </div>
+      <div class="key-row">
+        <div class="key-badge">Mouse Drag / Touch</div>
+        <div class="key-desc">Orbit 360° Third-Person Camera</div>
+      </div>
+      <div class="key-row">
+        <div class="key-badge">Mouse Wheel</div>
+        <div class="key-desc">Zoom In / Out Camera Distance</div>
+      </div>
+      <div class="key-row">
+        <div class="key-badge">C</div>
+        <div class="key-desc">Cycle Camera Mode (Close / Medium / Wide)</div>
+      </div>
+      <div class="key-row">
+        <div class="key-badge">B</div>
+        <div class="key-desc">Cycle Biome Themes</div>
+      </div>
+      <div class="key-row">
+        <div class="key-badge">T</div>
+        <div class="key-desc">Cycle Day / Night Lighting</div>
+      </div>
+      <div class="key-row">
+        <div class="key-badge">R</div>
+        <div class="key-desc">Respawn at World Center (0, 0)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom-Center Controls & Biome Dock -->
+  <div class="hud-bottom-center glass-panel">
+    <!-- Biomes Selector -->
+    <div class="dock-section">
+      <span class="dock-label">Biomes:</span>
+      <div class="button-group">
+        <button
+          *ngFor="let b of biomes"
+          class="dock-btn"
+          [class.active]="activeBiomeId === b.id"
+          (click)="selectBiome(b.id)"
+          [title]="b.name"
+        >
+          <span class="btn-icon">{{ b.icon }}</span>
+          <span class="btn-text">{{ b.name }}</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="dock-divider"></div>
+
+    <!-- Time of Day Selector -->
+    <div class="dock-section">
+      <span class="dock-label">Time:</span>
+      <div class="button-group">
+        <button
+          class="dock-btn"
+          [class.active]="activeTimeOfDay === 'dawn'"
+          (click)="setTimeOfDay('dawn')"
+          title="Dawn / Sunrise"
+        >
+          🌅 <span class="btn-text">Dawn</span>
+        </button>
+        <button
+          class="dock-btn"
+          [class.active]="activeTimeOfDay === 'noon'"
+          (click)="setTimeOfDay('noon')"
+          title="Bright Noon"
+        >
+          ☀️ <span class="btn-text">Noon</span>
+        </button>
+        <button
+          class="dock-btn"
+          [class.active]="activeTimeOfDay === 'sunset'"
+          (click)="setTimeOfDay('sunset')"
+          title="Golden Hour Sunset"
+        >
+          🌇 <span class="btn-text">Sunset</span>
+        </button>
+        <button
+          class="dock-btn"
+          [class.active]="activeTimeOfDay === 'night'"
+          (click)="setTimeOfDay('night')"
+          title="Starry Night"
+        >
+          🌙 <span class="btn-text">Night</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="dock-divider"></div>
+
+    <!-- Quick Utilities -->
+    <div class="dock-section">
+      <div class="button-group">
+        <button
+          class="dock-btn action-btn"
+          (click)="cycleCamera()"
+          title="Toggle Camera View Mode"
+        >
+          🎥 <span class="btn-text">{{ activeCameraMode | uppercase }}</span>
+        </button>
+        <button
+          class="dock-btn action-btn"
+          (click)="resetPosition()"
+          title="Reset Character to Origin"
+        >
+          🔄 <span class="btn-text">Respawn</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile On-Screen Touch Controls (Visible on Touch Screens) -->
+  <div class="mobile-controls-layer">
+    <!-- Virtual Joystick for movement -->
+    <div
+      class="virtual-joystick-base"
+      (touchstart)="onTouchJoyStart($event)"
+      (touchmove)="onTouchJoyMove($event)"
+      (touchend)="onTouchJoyEnd()"
+      (touchcancel)="onTouchJoyEnd()"
+    >
+      <div
+        class="virtual-joystick-thumb"
+        [style.transform]="
+          touchJoystick.active
+            ? 'translate(' + (touchJoystick.currX - touchJoystick.startX) + 'px, ' + (touchJoystick.currY - touchJoystick.startY) + 'px)'
+            : 'translate(0px, 0px)'
+        "
+      ></div>
+    </div>
+
+    <!-- Jump & Sprint Action Buttons -->
+    <div class="virtual-buttons-group">
+      <button class="touch-action-btn sprint-btn" (touchstart)="onSprintToggle()">
+        ⚡ Sprint
+      </button>
+      <button class="touch-action-btn jump-btn" (touchstart)="onJumpBtn()">
+        ⬆️ Jump
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,417 @@
+<div class="fullscreen-scene-container" #viewportContainer>
+  <!-- Fullscreen 3D WebGL Canvas -->
+  <canvas #rendererCanvas class="webgl-canvas" (click)="onCanvasClick($event)"></canvas>
+
+  <!-- Top Floating Header Bar -->
+  <header class="top-floating-bar">
+    <div class="nav-group">
+      <a routerLink="/threejs" class="back-pill-btn" title="Back to Three.js Projects">
+        <span class="arrow">←</span>
+        <span>Projects</span>
+      </a>
+      <div class="title-pill">
+        <span class="pill-icon">🎲</span>
+        <span class="pill-title">3D Ludo Arena</span>
+      </div>
+    </div>
+
+    <!-- Active Turn Status Pill -->
+    <div class="status-pill" [style.borderColor]="currentPlayer ? getPlayerColorCss(currentPlayer.color) : '#38bdf8'">
+      <div class="player-dot" [style.background]="currentPlayer ? getPlayerColorCss(currentPlayer.color) : '#38bdf8'"></div>
+      <div class="status-text-wrap">
+        <span class="status-name">{{ currentPlayer?.name }}</span>
+        <span class="status-sub">{{ statusBadge }}</span>
+      </div>
+    </div>
+
+    <!-- Top Action Controls -->
+    <div class="actions-group">
+      <!-- Camera Angle Presets -->
+      <div class="cam-pills">
+        <button
+          class="icon-btn"
+          [class.active]="cameraView === 'orbit'"
+          (click)="setCameraView('orbit')"
+          title="3D Free Orbit Camera"
+        >
+          🎥 3D
+        </button>
+        <button
+          class="icon-btn"
+          [class.active]="cameraView === 'top'"
+          (click)="setCameraView('top')"
+          title="Top-Down Tactical View"
+        >
+          📐 Top
+        </button>
+        <button
+          class="icon-btn"
+          [class.active]="cameraView === 'player'"
+          (click)="setCameraView('player')"
+          title="Swivel to Current Player View"
+        >
+          👤 Player
+        </button>
+      </div>
+
+      <!-- Speed Toggle -->
+      <button
+        class="icon-btn"
+        (click)="toggleSpeed()"
+        [title]="'Speed: ' + (gameSpeed === 'fast' ? 'Fast 2x' : 'Normal 1x')"
+      >
+        <span>⚡ {{ gameSpeed === 'fast' ? '2x' : '1x' }}</span>
+      </button>
+
+      <!-- Audio Mute Button -->
+      <button
+        class="icon-btn"
+        (click)="toggleMute()"
+        [title]="isSoundMuted ? 'Unmute Sound' : 'Mute Sound'"
+      >
+        <span>{{ isSoundMuted ? '🔇' : '🔊' }}</span>
+      </button>
+
+      <!-- History Log Drawer Button -->
+      <button
+        class="icon-btn"
+        [class.active]="isHistoryOpen"
+        (click)="toggleHistory()"
+        title="View Match Log"
+      >
+        <span>📜 Log</span>
+      </button>
+
+      <!-- Setup New Match Button -->
+      <button
+        class="match-setup-btn"
+        (click)="openSetupModal()"
+        title="Change Players & Setup New Game"
+      >
+        <span>⚙️ Setup Match</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Player Overview Scoreboard (Floating Left) -->
+  <aside class="players-sidebar">
+    <div class="sidebar-header">
+      <span class="header-icon">👥</span>
+      <span class="header-text">Players ({{ players.length }})</span>
+    </div>
+
+    <div class="player-cards-list">
+      <div
+        *ngFor="let p of players; let idx = index"
+        class="player-hud-card"
+        [class.active-turn]="idx === currentTurnIndex && !isGameOver"
+        [class.finished]="p.rank > 0"
+        [style.borderLeftColor]="getPlayerColorCss(p.color)"
+      >
+        <div class="player-card-main">
+          <div class="avatar-badge" [style.background]="getPlayerColorCss(p.color)">
+            <span>{{ p.avatar }}</span>
+          </div>
+
+          <div class="player-info">
+            <div class="player-name-row">
+              <span class="player-name">{{ p.name }}</span>
+              <span class="type-tag" [class.bot]="p.type === 'bot'">
+                {{ p.type === 'bot' ? 'AI Bot' : 'Human' }}
+              </span>
+            </div>
+
+            <!-- Goal Progress Bar -->
+            <div class="progress-container">
+              <div class="progress-bar">
+                <div
+                  class="progress-fill"
+                  [style.width.%]="(getPlayerGoalCount(p) / 4) * 100"
+                  [style.background]="getPlayerColorCss(p.color)"
+                ></div>
+              </div>
+              <span class="progress-count">{{ getPlayerGoalCount(p) }}/4 Goal</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rank Finish Badge -->
+        <div class="rank-badge" *ngIf="p.rank > 0">
+          <span class="medal">
+            {{ p.rank === 1 ? '🥇 1st' : p.rank === 2 ? '🥈 2nd' : p.rank === 3 ? '🥉 3rd' : '4th' }}
+          </span>
+        </div>
+
+        <!-- Turn indicator ping -->
+        <div class="turn-ping" *ngIf="idx === currentTurnIndex && !isGameOver">
+          <span class="ping-circle" [style.background]="getPlayerColorCss(p.color)"></span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Central Game Toast / Status Notification -->
+  <div class="center-toast-banner" *ngIf="statusMessage">
+    <div class="toast-inner">
+      <span class="toast-icon">{{ consecutiveSixes > 0 ? '🔥' : '✨' }}</span>
+      <span class="toast-text">{{ statusMessage }}</span>
+    </div>
+  </div>
+
+  <!-- Bottom Interactive HUD Controller -->
+  <div class="bottom-hud-bar" *ngIf="currentPlayer && !isGameOver">
+    <!-- Active Player Info Pill -->
+    <div class="hud-player-tag" [style.borderColor]="getPlayerColorCss(currentPlayer.color)">
+      <span class="player-type-icon">{{ currentPlayer.type === 'bot' ? '🤖' : '👤' }}</span>
+      <div class="player-details">
+        <span class="hud-name" [style.color]="getPlayerColorCss(currentPlayer.color)">
+          {{ currentPlayer.name }}
+        </span>
+        <span class="hud-sub">
+          {{ currentPlayer.type === 'bot' ? 'AI Calculating...' : 'Your Turn' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- 3D Dice Rolling Station / Button -->
+    <div class="dice-station-card">
+      <button
+        class="dice-roll-button"
+        [disabled]="!canRoll || isDiceRolling || currentPlayer.type === 'bot' || isAnimatingMove"
+        (click)="onRollDiceClick()"
+        [class.pulse-active]="canRoll && currentPlayer.type === 'human'"
+      >
+        <div class="dice-visual-cube" [class.rolling]="isDiceRolling">
+          <span class="dice-number">{{ diceValue }}</span>
+        </div>
+
+        <div class="roll-btn-content">
+          <span class="roll-main-text">
+            {{ isDiceRolling ? 'Rolling...' : currentPlayer.type === 'bot' ? 'Bot Rolling...' : canRoll ? 'ROLL DICE' : 'Dice Rolled' }}
+          </span>
+          <span class="roll-sub-text" *ngIf="canRoll && currentPlayer.type === 'human'">
+            Click here or click 3D dice
+          </span>
+          <span class="roll-sub-text" *ngIf="waitingForPawnSelect">
+            Select pawn below to move
+          </span>
+        </div>
+      </button>
+    </div>
+
+    <!-- Pawn Selector Tray (Displayed when Human needs to choose which pawn to move) -->
+    <div class="pawn-select-tray" *ngIf="waitingForPawnSelect && currentPlayer.type === 'human'">
+      <div class="tray-label">Choose Pawn:</div>
+      <div class="tray-buttons">
+        <button
+          *ngFor="let pawn of currentPlayer.pawns; let i = index"
+          class="pawn-pick-btn"
+          [disabled]="!selectablePawnIndices.includes(i) || isAnimatingMove"
+          [class.selectable]="selectablePawnIndices.includes(i)"
+          (click)="onPawnClick(i)"
+        >
+          <div class="pawn-avatar-circle" [style.background]="getPlayerColorCss(currentPlayer.color)">
+            <span>♟️ {{ i + 1 }}</span>
+          </div>
+          <span class="pawn-state-desc">
+            {{ pawn.state === 'yard' ? 'Exit Yard' : pawn.stepCount + diceValue === 56 ? 'Finish Goal!' : '+' + diceValue + ' Steps' }}
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Match Log History Drawer -->
+  <div class="history-drawer" [class.open]="isHistoryOpen">
+    <div class="drawer-header">
+      <div class="drawer-title">
+        <span>📜</span>
+        <span>Match Log</span>
+      </div>
+      <button class="close-drawer-btn" (click)="toggleHistory()">✕</button>
+    </div>
+
+    <div class="drawer-body">
+      <div *ngIf="gameLogs.length === 0" class="empty-logs">
+        No moves yet. Roll the dice to begin!
+      </div>
+      <div
+        *ngFor="let log of gameLogs"
+        class="log-item"
+        [class.capture]="log.type === 'capture'"
+        [class.goal]="log.type === 'goal'"
+        [class.win]="log.type === 'win'"
+      >
+        <div class="log-top">
+          <span class="log-badge" [style.background]="getPlayerColorCss(log.playerColor)">
+            {{ log.badge || '🎲' }} {{ log.playerName }}
+          </span>
+          <span class="log-time">{{ log.time }}</span>
+        </div>
+        <p class="log-desc">{{ log.text }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETUP & LOBBY MODAL -->
+  <div class="modal-overlay" *ngIf="showSetupModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="title-with-icon">
+          <span class="modal-icon">🎲</span>
+          <h2>Ludo Arena Match Setup</h2>
+        </div>
+        <button class="close-x-btn" (click)="showSetupModal = false">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Player Count Selector -->
+        <div class="setting-group">
+          <label class="group-label">Number of Players:</label>
+          <div class="count-selector-pills">
+            <button
+              class="pill-choice"
+              [class.active]="playerCount === 2"
+              (click)="setPlayerCount(2)"
+            >
+              <span>2 Players</span>
+              <small class="pill-hint">(Red vs Yellow)</small>
+            </button>
+            <button
+              class="pill-choice"
+              [class.active]="playerCount === 3"
+              (click)="setPlayerCount(3)"
+            >
+              <span>3 Players</span>
+              <small class="pill-hint">(Red, Green, Yellow)</small>
+            </button>
+            <button
+              class="pill-choice"
+              [class.active]="playerCount === 4"
+              (click)="setPlayerCount(4)"
+            >
+              <span>4 Players</span>
+              <small class="pill-hint">(All 4 Corners)</small>
+            </button>
+          </div>
+        </div>
+
+        <!-- Per-Player Configuration Cards -->
+        <div class="setting-group">
+          <label class="group-label">Configure Players (Real Player vs Computer AI):</label>
+          <div class="config-grid">
+            <ng-container *ngFor="let cfg of playerConfigs; let i = index">
+              <div
+                class="player-config-card"
+                *ngIf="cfg.active"
+                [style.borderLeftColor]="getPlayerColorCss(cfg.color)"
+              >
+                <div class="cfg-header">
+                  <div class="cfg-color-badge" [style.background]="getPlayerColorCss(cfg.color)">
+                    {{ cfg.color.toUpperCase() }}
+                  </div>
+                  <span class="cfg-slot-num">Slot {{ i + 1 }}</span>
+                </div>
+
+                <!-- Player Name Input -->
+                <div class="cfg-field">
+                  <label>Name:</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="cfg.name"
+                    class="name-input"
+                    maxlength="16"
+                    placeholder="Enter name"
+                  />
+                </div>
+
+                <!-- Player Type Toggle (Human vs Computer) -->
+                <div class="cfg-field">
+                  <label>Controller:</label>
+                  <div class="toggle-group">
+                    <button
+                      class="toggle-btn"
+                      [class.active]="cfg.type === 'human'"
+                      (click)="cfg.type = 'human'"
+                    >
+                      👤 Real Player
+                    </button>
+                    <button
+                      class="toggle-btn"
+                      [class.active]="cfg.type === 'bot'"
+                      (click)="cfg.type = 'bot'"
+                    >
+                      🤖 Computer
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Bot Difficulty (Visible only if Computer) -->
+                <div class="cfg-field" *ngIf="cfg.type === 'bot'">
+                  <label>AI Intelligence:</label>
+                  <select [(ngModel)]="cfg.difficulty" class="select-dropdown">
+                    <option value="easy">Casual (Friendly)</option>
+                    <option value="medium">Tactical (Balanced)</option>
+                    <option value="hard">Master (Aggressive)</option>
+                  </select>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="secondary-btn" (click)="showSetupModal = false">
+          Cancel
+        </button>
+        <button class="primary-btn" (click)="applySetupAndRestart()">
+          🚀 Start Match
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VICTORY CELEBRATION MODAL -->
+  <div class="modal-overlay victory-overlay" *ngIf="isGameOver">
+    <div class="victory-card">
+      <div class="victory-badge">👑 VICTORY! 👑</div>
+      <h2>Match Completed!</h2>
+      <p class="winner-congrats">
+        <strong [style.color]="getPlayerColorCss(winners[0].color)">
+          {{ winners[0].name }}
+        </strong>
+        has conquered the 3D Ludo Arena!
+      </p>
+
+      <!-- Podium Standings -->
+      <div class="podium-grid">
+        <div
+          *ngFor="let w of winners; let rankIdx = index"
+          class="podium-item"
+          [class.first-place]="rankIdx === 0"
+          [style.borderColor]="getPlayerColorCss(w.color)"
+        >
+          <div class="podium-medal">
+            {{ rankIdx === 0 ? '🥇' : rankIdx === 1 ? '🥈' : rankIdx === 2 ? '🥉' : '🎖️' }}
+          </div>
+          <div class="podium-avatar" [style.background]="getPlayerColorCss(w.color)">
+            <span>{{ w.avatar }}</span>
+          </div>
+          <div class="podium-name">{{ w.name }}</div>
+          <div class="podium-tag">{{ w.type === 'bot' ? 'Computer AI' : 'Real Player' }}</div>
+          <div class="podium-rank-label">Rank #{{ rankIdx + 1 }}</div>
+        </div>
+      </div>
+
+      <div class="victory-actions">
+        <button class="secondary-btn" (click)="openSetupModal()">
+          ⚙️ Change Settings
+        </button>
+        <button class="primary-btn pulse" (click)="startNewMatch()">
+          🔄 Play Again
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

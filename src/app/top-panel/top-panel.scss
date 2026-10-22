@@ -1,0 +1,250 @@
+.nav-menu {
+  width: 100%;
+  padding: 0 5%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+}
+
+.logo {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  background: linear-gradient(90deg, #00f2fe, #4facfe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  cursor: pointer;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 2rem;
+  margin: 0;
+  padding: 0;
+
+  li {
+    display: flex;
+    align-items: center;
+    position: relative;
+
+    > a {
+      white-space: nowrap;
+      text-decoration: none;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 1.1rem;
+      font-weight: 500;
+      transition: color 0.3s ease, text-shadow 0.3s ease;
+      position: relative;
+      padding: 0.5rem 0;
+
+      &.active,
+      &:hover {
+        color: #ffffff;
+        text-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+      }
+
+      &::after {
+        content: '';
+        position: absolute;
+        width: 0;
+        height: 2px;
+        bottom: 0;
+        left: 0;
+        background: linear-gradient(90deg, #00f2fe, #4facfe);
+        transition: width 0.3s ease;
+        border-radius: 2px;
+      }
+
+      &:hover::after,
+      &.active::after {
+        width: 100%;
+      }
+    }
+  }
+}
+
+
+
+/* ==========================================================================
+   Compact Floating Circular Menu (Three.js / Fullscreen Mode)
+   ========================================================================== */
+.circular-menu-container {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.5rem;
+  z-index: 9999;
+  pointer-events: auto;
+}
+
+.circular-fab-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(18, 18, 28, 0.85);
+  border: 1.5px solid rgba(0, 242, 254, 0.4);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.45), 0 0 15px rgba(0, 242, 254, 0.25);
+  backdrop-filter: blur(16px);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+  padding: 0;
+
+  &:hover {
+    transform: scale(1.08);
+    border-color: #00f2fe;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 22px rgba(0, 242, 254, 0.45);
+    background: rgba(22, 22, 36, 0.95);
+  }
+
+  &.active {
+    border-color: #00f2fe;
+    background: rgba(0, 242, 254, 0.15);
+    box-shadow: 0 0 20px rgba(0, 242, 254, 0.5);
+  }
+}
+
+.hamburger-icon {
+  width: 22px;
+  height: 16px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  span {
+    display: block;
+    height: 2px;
+    width: 100%;
+    background: #00f2fe;
+    border-radius: 2px;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 0 6px rgba(0, 242, 254, 0.5);
+  }
+
+  &.open {
+    span:nth-child(1) {
+      transform: translateY(7px) rotate(45deg);
+    }
+    span:nth-child(2) {
+      opacity: 0;
+      transform: translateX(-10px);
+    }
+    span:nth-child(3) {
+      transform: translateY(-7px) rotate(-45deg);
+    }
+  }
+}
+
+/* Floating Glassmorphic Dropdown Menu */
+.floating-dropdown-menu {
+  position: absolute;
+  top: 60px;
+  right: 0;
+  width: 235px;
+  background: rgba(16, 16, 26, 0.94);
+  border: 1px solid rgba(0, 242, 254, 0.3);
+  border-radius: 18px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6), 0 0 25px rgba(0, 242, 254, 0.2);
+  backdrop-filter: blur(20px);
+  padding: 1rem;
+  animation: dropdownFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: top right;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+
+  .dropdown-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+    .dropdown-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.9rem;
+      cursor: pointer;
+      padding: 0.2rem;
+      line-height: 1;
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: #00f2fe;
+      }
+    }
+  }
+
+  .dropdown-nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+
+    li {
+      a {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        padding: 0.6rem 0.85rem;
+        border-radius: 10px;
+        text-decoration: none;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.95rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+
+        .item-icon {
+          font-size: 1.15rem;
+        }
+
+        .item-text {
+          flex: 1;
+        }
+
+        &:hover {
+          background: rgba(0, 242, 254, 0.12);
+          color: #fff;
+          transform: translateX(4px);
+        }
+
+        &.active {
+          background: linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(79, 172, 254, 0.2));
+          border: 1px solid rgba(0, 242, 254, 0.4);
+          color: #00f2fe;
+          font-weight: 600;
+          box-shadow: 0 0 12px rgba(0, 242, 254, 0.2);
+        }
+      }
+    }
+  }
+}
+
+
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}

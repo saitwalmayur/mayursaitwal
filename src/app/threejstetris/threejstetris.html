@@ -1,0 +1,274 @@
+<div class="tetris-container" #viewportContainer>
+  <!-- Fullscreen 3D WebGL Canvas -->
+  <canvas #rendererCanvas class="webgl-canvas"></canvas>
+
+  <!-- Top Floating Navigation & Action Bar -->
+  <header class="top-bar">
+    <div class="left-group">
+      <a routerLink="/threejs" class="nav-back-btn" title="Back to Three.js Projects">
+        <span class="arrow">←</span>
+        <span>Projects</span>
+      </a>
+      <div class="title-badge">
+        <span class="icon">🧊</span>
+        <span>3D Tetris</span>
+      </div>
+    </div>
+
+    <!-- Camera Presets -->
+    <div class="cam-pills">
+      <button
+        class="cam-btn"
+        [class.active]="activeCamPreset === 'iso'"
+        (click)="setCameraPreset('iso')"
+        title="3D Angled Perspective View"
+      >
+        📐 3D Angle
+      </button>
+      <button
+        class="cam-btn"
+        [class.active]="activeCamPreset === 'front'"
+        (click)="setCameraPreset('front')"
+        title="Front 3D Perspective View"
+      >
+        👁 Front 3D
+      </button>
+    </div>
+
+    <!-- Right Quick Actions -->
+    <div class="right-group">
+      <button
+        class="action-btn"
+        (click)="toggleMute()"
+        [title]="isSoundMuted ? 'Unmute Audio' : 'Mute Audio'"
+      >
+        {{ isSoundMuted ? '🔇' : '🔊' }}
+      </button>
+      <button
+        class="action-btn"
+        (click)="togglePause()"
+        [title]="isPaused ? 'Resume Game' : 'Pause Game'"
+      >
+        {{ isPaused ? '▶ Resume' : '⏸ Pause' }}
+      </button>
+      <button
+        class="action-btn restart"
+        (click)="startNewGame()"
+        title="Restart Game"
+      >
+        🔄 Restart
+      </button>
+    </div>
+  </header>
+
+  <!-- Floating Stats Card (Top Left) -->
+  <aside class="stats-card">
+    <div class="stat-item highlight">
+      <span class="stat-label">SCORE</span>
+      <span class="stat-value">{{ score | number }}</span>
+    </div>
+    <div class="stat-row">
+      <div class="stat-item">
+        <span class="stat-label">HIGH</span>
+        <span class="stat-value small">{{ highScore | number }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">LEVEL</span>
+        <span class="stat-value small">{{ level }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">LINES</span>
+        <span class="stat-value small">{{ linesCleared }}</span>
+      </div>
+    </div>
+
+    <!-- Hold Piece Mini Slot -->
+    <div class="slot-container">
+      <div class="slot-header">
+        <span>HOLD [C]</span>
+        <span class="slot-badge" *ngIf="!canHold">Locked</span>
+      </div>
+      <div class="slot-box" [style.borderColor]="holdPieceDef?.glowColor || 'rgba(255,255,255,0.1)'">
+        <span class="piece-name" *ngIf="holdPieceDef">{{ holdPieceDef.name }}</span>
+        <span class="empty-hint" *ngIf="!holdPieceDef">Empty</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Floating Next & Row Fill Gauge (Top Right) -->
+  <aside class="side-card">
+    <!-- Next Piece Mini Slot -->
+    <div class="slot-container">
+      <div class="slot-header">
+        <span>NEXT PIECE</span>
+      </div>
+      <div class="slot-box" [style.borderColor]="nextPieceDef?.glowColor || 'rgba(255,255,255,0.1)'">
+        <span class="piece-name" *ngIf="nextPieceDef">{{ nextPieceDef.name }}</span>
+      </div>
+    </div>
+
+    <!-- Row Fill Gauge (0 - 19) -->
+    <div class="layer-gauge-card">
+      <div class="gauge-title">ROW FILL (0 - 19)</div>
+      <div class="gauge-bars">
+        <div
+          class="gauge-row"
+          *ngFor="let pct of rowFillPercentages.slice().reverse(); let i = index"
+          [title]="'Row ' + (19 - i) + ': ' + pct + '% filled'"
+        >
+          <span class="layer-num">{{ 19 - i }}</span>
+          <div class="bar-track">
+            <div
+              class="bar-fill"
+              [style.width.%]="pct"
+              [class.critical]="pct >= 70"
+              [class.almost-full]="pct >= 90"
+            ></div>
+          </div>
+          <span class="layer-pct">{{ pct }}%</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Combo / Clear Banner -->
+  <div class="combo-banner" *ngIf="lastComboText">
+    <div class="combo-pill">{{ lastComboText }}</div>
+  </div>
+
+  <!-- Floating Touch / Click Controls Side HUD -->
+  <aside
+    class="side-controls"
+    [class.dock-left]="uiSide === 'left'"
+    [class.is-collapsed]="isControlsCollapsed"
+    aria-label="Tetris Controls"
+  >
+    <!-- Controls Header with Dock & Collapse Controls -->
+    <div class="controls-header">
+      <div class="header-label">
+        <span class="live-dot"></span>
+        <span class="title">CONTROLS</span>
+      </div>
+      <div class="header-actions">
+        <button
+          type="button"
+          class="dock-toggle-btn"
+          (click)="toggleUiSide()"
+          [title]="uiSide === 'right' ? 'Dock controls to Left Side' : 'Dock controls to Right Side'"
+        >
+          ⇄ {{ uiSide === 'right' ? 'Dock Left' : 'Dock Right' }}
+        </button>
+        <button
+          type="button"
+          class="collapse-btn"
+          (click)="toggleControlsCollapsed()"
+          [title]="isControlsCollapsed ? 'Expand Controls Panel' : 'Minimize Controls Panel'"
+        >
+          {{ isControlsCollapsed ? '▲' : '▼' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Collapsible Controls Body -->
+    <div class="controls-body" *ngIf="!isControlsCollapsed">
+      <!-- Movement (Left, Down, Right) -->
+      <div class="move-cluster">
+        <div class="cluster-label">MOVE & DROP</div>
+        <div class="move-grid">
+          <button class="ctrl-btn move-btn" (click)="move(-1)" title="Move Left [A / ◀]">
+            <span class="icon">◀</span>
+            <span class="text">Left</span>
+          </button>
+          <button class="ctrl-btn move-btn soft" (click)="softDrop()" title="Soft Drop [S / ⬇]">
+            <span class="icon">⬇</span>
+            <span class="text">Down</span>
+          </button>
+          <button class="ctrl-btn move-btn" (click)="move(1)" title="Move Right [D / ▶]">
+            <span class="icon">▶</span>
+            <span class="text">Right</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Rotate & Actions -->
+      <div class="action-cluster">
+        <button class="ctrl-btn rot-action-btn" (click)="rotate(true)" title="Rotate Piece [W / ▲]">
+          <span class="icon">↻</span>
+          <span class="text">ROTATE</span>
+        </button>
+        <button class="ctrl-btn drop-btn" (click)="hardDrop()" title="Hard Drop [Space]">
+          <span class="icon">⚡</span>
+          <span class="text">HARD DROP</span>
+        </button>
+        <button
+          class="ctrl-btn hold-btn"
+          [disabled]="!canHold"
+          (click)="hold()"
+          title="Hold Piece [C / Shift]"
+        >
+          <span class="icon">🔄</span>
+          <span class="text">HOLD</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Desktop Keyboard Hint Bar (Positioned on the side) -->
+  <div class="keyboard-hints" [class.on-right]="uiSide === 'left'">
+    <div class="hints-label">CLASSIC 2D CONTROLS</div>
+    <div class="hints-content">
+      <span><kbd>A</kbd>/<kbd>D</kbd> or <kbd>◀</kbd><kbd>▶</kbd> Move</span>
+      <span><kbd>W</kbd> or <kbd>▲</kbd> Rotate</span>
+      <span><kbd>S</kbd> or <kbd>⬇</kbd> Soft Drop</span>
+      <span><kbd>Space</kbd> Hard Drop</span>
+      <span><kbd>C</kbd> Hold</span>
+      <span><kbd>P</kbd> Pause</span>
+    </div>
+  </div>
+
+  <!-- Pause Overlay Modal -->
+  <div class="modal-backdrop" *ngIf="isPaused && !isGameOver">
+    <div class="modal-card">
+      <div class="modal-icon">⏸</div>
+      <h2>Game Paused</h2>
+      <p>Take a breath, strategize your next 3D placement!</p>
+      <div class="modal-actions">
+        <button class="btn primary" (click)="togglePause()">▶ Resume</button>
+        <button class="btn secondary" (click)="startNewGame()">🔄 Restart</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Over Modal -->
+  <div class="modal-backdrop" *ngIf="isGameOver">
+    <div class="modal-card game-over">
+      <div class="modal-icon">💥</div>
+      <h2>Game Over</h2>
+      <p>The well reached maximum capacity!</p>
+
+      <div class="modal-stats">
+        <div class="mstat">
+          <span class="label">Final Score</span>
+          <span class="val highlight">{{ score | number }}</span>
+        </div>
+        <div class="mstat">
+          <span class="label">High Score</span>
+          <span class="val">{{ highScore | number }}</span>
+        </div>
+        <div class="mstat">
+          <span class="label">Lines Cleared</span>
+          <span class="val">{{ linesCleared }}</span>
+        </div>
+        <div class="mstat">
+          <span class="label">Level</span>
+          <span class="val">{{ level }}</span>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn primary glow" (click)="startNewGame()">🎮 Play Again</button>
+        <a routerLink="/threejs" class="btn secondary">Exit to Demos</a>
+      </div>
+    </div>
+  </div>
+</div>

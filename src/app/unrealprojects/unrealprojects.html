@@ -1,0 +1,150 @@
+<div class="unreal-page">
+  <div class="content-wrapper">
+    <!-- Hero Section -->
+    <header class="hero-section">
+      <div class="badge-pill">
+        <span class="pulse-dot"></span>
+        Unreal Engine 5 • C++ & Blueprints Architecture
+      </div>
+      <h1 class="gradient-title">Unreal Engine Portfolio</h1>
+      <p class="hero-desc">
+        Scalable multiplayer systems, Gameplay Ability System (GAS), Epic Online Services (EOS),
+        modular avatar pipelines, and real-time interactive 3D simulations engineered with Unreal Engine and C++.
+      </p>
+
+      <!-- Key Stats Bar -->
+      <div class="stats-ribbon">
+        <div class="stat-pill">
+          <span class="stat-icon">⚡</span>
+          <div class="stat-meta">
+            <span class="stat-number">UE 5</span>
+            <span class="stat-text">Core Engine</span>
+          </div>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-icon">⚔️</span>
+          <div class="stat-meta">
+            <span class="stat-number">GAS</span>
+            <span class="stat-text">Gameplay Ability System</span>
+          </div>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-icon">🌐</span>
+          <div class="stat-meta">
+            <span class="stat-number">EOS</span>
+            <span class="stat-text">Epic Online Services</span>
+          </div>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-icon">🖥️</span>
+          <div class="stat-meta">
+            <span class="stat-number">C++</span>
+            <span class="stat-text">& Blueprints Native</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Filters Toolbar -->
+    <div class="filter-toolbar">
+      <div class="category-tabs">
+        <button
+          class="tab-btn"
+          [class.active]="activeCategory === 'all'"
+          (click)="setCategory('all')"
+        >
+          All ({{ projects.length }})
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="activeCategory === 'gameplay'"
+          (click)="setCategory('gameplay')"
+        >
+          Gameplay & Networking
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="activeCategory === 'enterprise'"
+          (click)="setCategory('enterprise')"
+        >
+          Enterprise & AR
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="activeCategory === 'graphics'"
+          (click)="setCategory('graphics')"
+        >
+          Shaders & Graphics
+        </button>
+      </div>
+
+      <a routerLink="/showcase" class="back-showcase-btn">
+        ← Back to Showcase
+      </a>
+    </div>
+
+    <!-- Projects Grid -->
+    <div class="projects-grid">
+      <article
+        class="project-card"
+        *ngFor="let p of filteredProjects"
+        [style.--accent]="p.accentColor"
+      >
+        <div class="card-inner">
+          <div class="card-top">
+            <div class="card-title-row">
+              <div class="icon-avatar" *ngIf="p.imageUrl">
+                <img [src]="p.imageUrl" [alt]="p.title" />
+              </div>
+              <div class="title-meta">
+                <span class="category-tag">{{ p.category | titlecase }}</span>
+                <h2 class="card-title">{{ p.title }}</h2>
+              </div>
+            </div>
+            <p class="tagline">{{ p.tagline }}</p>
+          </div>
+
+          <p class="desc">{{ p.description }}</p>
+
+          <!-- Key Highlights / Architecture Features -->
+          <div class="features-box">
+            <div class="features-header">Architecture Highlights:</div>
+            <ul class="feature-list">
+              <li *ngFor="let feat of p.features">
+                <span class="bullet-check">✓</span>
+                {{ feat }}
+              </li>
+            </ul>
+          </div>
+
+          <!-- Tech Stack Tags -->
+          <div class="tech-stack-wrap">
+            <span class="tech-tag" *ngFor="let t of p.techStack">{{ t }}</span>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="action-footer">
+            <ng-container *ngFor="let link of p.links">
+              <a
+                *ngIf="link.type === 'external'"
+                [href]="link.url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="action-btn primary-btn"
+              >
+                {{ link.label }} ↗
+              </a>
+              <a
+                *ngIf="link.type === 'internal'"
+                [routerLink]="link.url"
+                class="action-btn secondary-btn"
+              >
+                {{ link.label }} →
+              </a>
+            </ng-container>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</div>
